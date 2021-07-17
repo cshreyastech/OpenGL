@@ -41,40 +41,26 @@ void SandboxLayer::OnAttach()
 		"assets/shaders/shader.glsl.frag"
 	));
 
-	//glUseProgram(m_Shader->GetRendererID());
-	//auto loc = glGetUniformLocation(m_Shader->GetRendererID(), "u_Textures");
-	//int samplers[2] = { 0, 1 };
-	//glUniform1iv(loc, 2, samplers);
+	glUseProgram(m_Shader->GetRendererID());
+	auto loc = glGetUniformLocation(m_Shader->GetRendererID(), "u_Textures");
+	int samplers[2] = { 0, 1 };
+	glUniform1iv(loc, 2, samplers);
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
 	float vertices[] = {
-		// Position				// Color					// Texture		
-															// coordinate	
-		-1.5f, -0.5f, 0.0f,		0.18f, 0.6f, 0.96f, 1.0f,	0.0f, 0.0f,
-		-0.5f, -0.5f, 0.0f,		0.18f, 0.6f, 0.96f, 1.0f,	1.0f, 0.0f,
-		-0.5f,  0.5f, 0.0f,		0.18f, 0.6f, 0.96f, 1.0f,	1.0f, 1.0f,
-		-1.5f,  0.5f, 0.0f,		0.18f, 0.6f, 0.96f, 1.0f,	0.0f, 1.0f,
-	
-		 0.5f, -0.5f, 0.0f,		1.0f, 0.93f, 0.24f, 1.0f,	0.0f, 0.0f,
-		 1.5f, -0.5f, 0.0f,		1.0f, 0.93f, 0.24f, 1.0f,	1.0f, 0.0f,	
-		 1.5f,  0.5f, 0.0f,		1.0f, 0.93f, 0.24f, 1.0f,	1.0f, 1.0f,
-		 0.5f,  0.5f, 0.0f,		1.0f, 0.93f, 0.24f, 1.0f, 	0.0f, 1.0f
-	};
-
-	//float vertices[] = {
-	//	// Position				// Color					// Texture		// Texture
-	//														// coordinate	// ID
-	//	-1.5f, -0.5f, 0.0f,		0.18f, 0.6f, 0.96f, 1.0f,	0.0f, 0.0f,		0.0f,
-	//	-0.5f, -0.5f, 0.0f,		0.18f, 0.6f, 0.96f, 1.0f,	1.0f, 0.0f,		0.0f,
-	//	-0.5f,  0.5f, 0.0f,		0.18f, 0.6f, 0.96f, 1.0f,	1.0f, 1.0f,		0.0f,
-	//	-1.5f,  0.5f, 0.0f,		0.18f, 0.6f, 0.96f, 1.0f,	0.0f, 1.0f,		0.0f,
-	//																		
-	//	 0.5f, -0.5f, 0.0f,		1.0f, 0.93f, 0.24f, 1.0f,	0.0f, 0.0f,		1.0f,
-	//	 1.5f, -0.5f, 0.0f,		1.0f, 0.93f, 0.24f, 1.0f,	1.0f, 0.0f,		1.0f,
-	//	 1.5f,  0.5f, 0.0f,		1.0f, 0.93f, 0.24f, 1.0f,	1.0f, 1.0f,		1.0f,
-	//	 0.5f,  0.5f, 0.0f,		1.0f, 0.93f, 0.24f, 1.0f, 	0.0f, 1.0f,		1.0f
-	//};																		
+		// Position				// Color					// Texture		// Texture
+															// coordinate	// ID
+		-1.5f, -0.5f, 0.0f,		0.18f, 0.6f, 0.96f, 1.0f,	0.0f, 0.0f,		0.0f,
+		-0.5f, -0.5f, 0.0f,		0.18f, 0.6f, 0.96f, 1.0f,	1.0f, 0.0f,		0.0f,
+		-0.5f,  0.5f, 0.0f,		0.18f, 0.6f, 0.96f, 1.0f,	1.0f, 1.0f,		0.0f,
+		-1.5f,  0.5f, 0.0f,		0.18f, 0.6f, 0.96f, 1.0f,	0.0f, 1.0f,		0.0f,
+																			
+		 0.5f, -0.5f, 0.0f,		1.0f, 0.93f, 0.24f, 1.0f,	0.0f, 0.0f,		1.0f,
+		 1.5f, -0.5f, 0.0f,		1.0f, 0.93f, 0.24f, 1.0f,	1.0f, 0.0f,		1.0f,
+		 1.5f,  0.5f, 0.0f,		1.0f, 0.93f, 0.24f, 1.0f,	1.0f, 1.0f,		1.0f,
+		 0.5f,  0.5f, 0.0f,		1.0f, 0.93f, 0.24f, 1.0f, 	0.0f, 1.0f,		1.0f
+	};																		
 
 	glCreateVertexArrays(1, &m_QuadVA);
 	glBindVertexArray(m_QuadVA);
@@ -84,16 +70,16 @@ void SandboxLayer::OnAttach()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	glEnableVertexArrayAttrib(m_QuadVB, 0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), 0);
 
 	glEnableVertexArrayAttrib(m_QuadVB, 1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (const void*)12);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (const void*)12);
 
 	glEnableVertexArrayAttrib(m_QuadVB, 2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (const void*)28);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (const void*)28);
 
-	/*glEnableVertexArrayAttrib(m_QuadVB, 3);
-	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (const void*)36);*/
+	glEnableVertexArrayAttrib(m_QuadVB, 3);
+	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (const void*)36);
 
 	uint32_t indices[] = {
 		0, 1, 2, 2, 3, 0,
@@ -132,8 +118,8 @@ void SandboxLayer::OnUpdate(Timestep ts)
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glUseProgram(m_Shader->GetRendererID());
-	/*glBindTexture(0, m_ChernoTex);
-	glBindTexture(1, m_ChernoTex);*/
+	glBindTextureUnit(0, m_ChernoTex);
+	glBindTextureUnit(1, m_HazelTex);
 
 	//auto vp = m_CameraController.GetCamera().GetViewProjectionMatrix();
 	const auto& vp = m_CameraController.GetCamera().GetViewProjectionMatrix();
