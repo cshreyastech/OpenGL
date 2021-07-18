@@ -21,8 +21,10 @@ private:
 	GLuint m_QuadVA = 0, m_QuadVB = 0, m_QuadIB = 0;
 	GLCore::Utils::OrthographicCameraController m_CameraController;
 
-	//glm::vec4 m_SquareColor = {1.0f, 1.0f, 1.0f, 1.0f };
+	glm::vec4 m_SquareColor = { 0.8f, 0.2f, 0.3f, 1.0f };
 	GLuint m_ChernoTex, m_HazelTex;
 
-	float m_QuadPosition[2] = { -1.5f, -0.5f };
+	//float m_QuadPosition[2] = { -1.5f, -0.5f };
+	//glm::vec2 m_QuadPosition(-1.5f, -0.5f);
+	glm::vec2 m_QuadPosition = { -1.5f, -0.5f };
 };
