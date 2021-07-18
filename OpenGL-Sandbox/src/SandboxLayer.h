@@ -24,5 +24,5 @@ private:
 	//glm::vec4 m_SquareColor = {1.0f, 1.0f, 1.0f, 1.0f };
 	GLuint m_ChernoTex, m_HazelTex;
 
-	//glm::vec2 m_QuadPosition = { -1.5f, -0.5f };
+	float m_QuadPosition[2] = { -1.5f, -0.5f };
 };
