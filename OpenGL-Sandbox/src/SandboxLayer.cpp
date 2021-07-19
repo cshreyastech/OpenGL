@@ -2,11 +2,52 @@
 #include <stb_image/stb_image.h>
 #include "Renderer.h"
 
+#include <chrono>
+
 using namespace GLCore;
 using namespace GLCore::Utils;
 
+template<typename Fn>
+class Timer
+{
+public:
+	Timer(const char* name, Fn&& func)
+		: m_Name(name), m_Func(func), m_Stopped(false)
+	{
+		m_StartTimePoint = std::chrono::high_resolution_clock::now();
+	}
+
+	~Timer()
+	{
+		if (!m_Stopped)
+			Stop();
+	}
+
+	void Stop()
+	{
+		auto endTimepont = std::chrono::high_resolution_clock::now();
+
+		long long start = std::chrono::time_point_cast<std::chrono::microseconds>(m_StartTimePoint).time_since_epoch().count();
+		long long end = std::chrono::time_point_cast<std::chrono::microseconds>(endTimepont).time_since_epoch().count();
+
+		m_Stopped = true;
+
+		float duration = (end - start) * 0.001f;
+		//std::cout << m_Name << ": " << duration << "ms" << std::endl;
+		m_Func({ m_Name, duration });
+	}
+
+private:
+	const char* m_Name;
+	Fn m_Func;
+
+	std::chrono::time_point<std::chrono::steady_clock> m_StartTimePoint;
+	bool m_Stopped;
+};
+
+#define PROFILE_SCOPE(name) Timer timer##__LINE__(name, [&](ProfileResult profileResult) {m_ProfileResults.push_back(profileResult); })
 SandboxLayer::SandboxLayer()
-	: m_CameraController(16.0f / 9.0f)
+	: Layer("Sandbox"), m_CameraController(16.0f / 9.0f)
 {
 }
 
@@ -43,21 +84,9 @@ void SandboxLayer::OnAttach()
 		"assets/shaders/shader.glsl.frag"
 	));
 
-	glUseProgram(m_Shader->GetRendererID());
-	auto loc = glGetUniformLocation(m_Shader->GetRendererID(), "u_Textures");
-
-	int samplers[32];
-	for (int i = 0; i < 32; i++)
-		samplers[i] = i;
-	glUniform1iv(loc, 32, samplers);
-
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
 	Renderer::Init();
-
-	m_ChernoTex = LoadTexture("assets/textures/Cherno.png");
-	m_HazelTex = LoadTexture("assets/textures/Hazel.png");
-
 }
 
 void SandboxLayer::OnDetach()
@@ -83,8 +112,15 @@ static void SetUniformMat4(uint32_t shader, const char* name, const glm::mat4& m
 
 void SandboxLayer::OnUpdate(Timestep ts)
 {
-	m_CameraController.OnUpdate(ts);
+	PROFILE_SCOPE("SandboxLayer::OnUpdate");
 
+	// Update
+	{
+		PROFILE_SCOPE("CameraController::OnUpdate");
+		m_CameraController.OnUpdate(ts);
+	}
+
+	
 	glClear(GL_COLOR_BUFFER_BIT);
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glUseProgram(m_Shader->GetRendererID());
@@ -92,40 +128,42 @@ void SandboxLayer::OnUpdate(Timestep ts)
 	Renderer::ResetStats();
 	Renderer::BeginBatch();
 
-	const auto& vp = m_CameraController.GetCamera().GetViewProjectionMatrix();
-	SetUniformMat4(m_Shader->GetRendererID(), "u_ViewProj", vp);
-	SetUniformMat4(m_Shader->GetRendererID(), "u_Transform", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
-
-	for (float y = -10.0f; y < 10.0f; y += 0.25f)
 	{
-		for (float x = -10.0f; x < 10.0f; x += 0.25f)
+		PROFILE_SCOPE("Renderer Draw");
+		const auto& vp = m_CameraController.GetCamera().GetViewProjectionMatrix();
+		SetUniformMat4(m_Shader->GetRendererID(), "u_ViewProj", vp);
+		SetUniformMat4(m_Shader->GetRendererID(), "u_Transform", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+
+		for (float y = -10.0f; y < 10.0f; y += 0.25f)
 		{
-			glm::vec4 color = { (x + 10) / 20.0f, 0.2f, (y + 10) / 20.0f, 1.0f };
-			Renderer::DrawQuad({ x, y }, { 0.25f, 0.25f }, color);
+			for (float x = -10.0f; x < 10.0f; x += 0.25f)
+			{
+				glm::vec4 color = { (x + 10) / 20.0f, 0.2f, (y + 10) / 20.0f, 1.0f };
+				Renderer::DrawQuad({ x, y }, { 0.25f, 0.25f }, color);
+			}
 		}
+
+		Renderer::EndBatch();
+
+
+		Renderer::Flush();
 	}
-
-	for (int y = 0; y < 5; y++)
-	{
-		for (int x = 0; x < 5; x++)
-		{
-			GLuint tex = (x + y) % 2 == 0 ? m_ChernoTex : m_HazelTex;
-			Renderer::DrawQuad({ x, y }, { 1.0f, 1.0f }, tex);
-		}
-	}
-
-	Renderer::DrawQuad(m_QuadPosition, { 1.0f, 1.0f }, m_ChernoTex);
-	Renderer::EndBatch();
-
-
-	Renderer::Flush();
 }
 
 void SandboxLayer::OnImGuiRender()
 {
 	ImGui::Begin("Controls");
-	ImGui::DragFloat2("Quad Position", glm::value_ptr(m_QuadPosition), 0.1f);
 	ImGui::Text("Quads: %d", Renderer::GetStats().QuadCount);
 	ImGui::Text("Quads: %d", Renderer::GetStats().DrawCount);
+
+	for (auto& result : m_ProfileResults)
+	{
+		char label[50];
+		strcpy(label, "%.3fms ");
+		strcat(label, result.Name);
+		ImGui::Text(label, result.Time);
+	}
+	m_ProfileResults.clear();
+
 	ImGui::End();
 }

@@ -4,7 +4,7 @@
 #include <array>
 #include <glad\glad.h>
 
-const size_t MaxQuadCount = 1000;
+const size_t MaxQuadCount = 7000;
 const size_t MaxVertexCount = MaxQuadCount * 4;
 const size_t MaxIndexCount = MaxQuadCount * 6;
 
