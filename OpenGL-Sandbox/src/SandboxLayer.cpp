@@ -2,50 +2,9 @@
 #include <stb_image/stb_image.h>
 #include "Renderer.h"
 
-#include <chrono>
-
 using namespace GLCore;
 using namespace GLCore::Utils;
 
-template<typename Fn>
-class Timer
-{
-public:
-	Timer(const char* name, Fn&& func)
-		: m_Name(name), m_Func(func), m_Stopped(false)
-	{
-		m_StartTimePoint = std::chrono::high_resolution_clock::now();
-	}
-
-	~Timer()
-	{
-		if (!m_Stopped)
-			Stop();
-	}
-
-	void Stop()
-	{
-		auto endTimepont = std::chrono::high_resolution_clock::now();
-
-		long long start = std::chrono::time_point_cast<std::chrono::microseconds>(m_StartTimePoint).time_since_epoch().count();
-		long long end = std::chrono::time_point_cast<std::chrono::microseconds>(endTimepont).time_since_epoch().count();
-
-		m_Stopped = true;
-
-		float duration = (end - start) * 0.001f;
-		//std::cout << m_Name << ": " << duration << "ms" << std::endl;
-		m_Func({ m_Name, duration });
-	}
-
-private:
-	const char* m_Name;
-	Fn m_Func;
-
-	std::chrono::time_point<std::chrono::steady_clock> m_StartTimePoint;
-	bool m_Stopped;
-};
-
-#define PROFILE_SCOPE(name) Timer timer##__LINE__(name, [&](ProfileResult profileResult) {m_ProfileResults.push_back(profileResult); })
 SandboxLayer::SandboxLayer()
 	: Layer("Sandbox"), m_CameraController(16.0f / 9.0f)
 {
@@ -112,11 +71,11 @@ static void SetUniformMat4(uint32_t shader, const char* name, const glm::mat4& m
 
 void SandboxLayer::OnUpdate(Timestep ts)
 {
-	PROFILE_SCOPE("SandboxLayer::OnUpdate");
+	GLCORE_PROFILE_FUNCTION();
 
 	// Update
 	{
-		PROFILE_SCOPE("CameraController::OnUpdate");
+		GLCORE_PROFILE_SCOPE("CameraController::OnUpdate");
 		m_CameraController.OnUpdate(ts);
 	}
 
@@ -129,7 +88,7 @@ void SandboxLayer::OnUpdate(Timestep ts)
 	Renderer::BeginBatch();
 
 	{
-		PROFILE_SCOPE("Renderer Draw");
+		GLCORE_PROFILE_SCOPE("Renderer Draw");
 		const auto& vp = m_CameraController.GetCamera().GetViewProjectionMatrix();
 		SetUniformMat4(m_Shader->GetRendererID(), "u_ViewProj", vp);
 		SetUniformMat4(m_Shader->GetRendererID(), "u_Transform", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
@@ -152,18 +111,11 @@ void SandboxLayer::OnUpdate(Timestep ts)
 
 void SandboxLayer::OnImGuiRender()
 {
+	GLCORE_PROFILE_FUNCTION();
+
 	ImGui::Begin("Controls");
 	ImGui::Text("Quads: %d", Renderer::GetStats().QuadCount);
 	ImGui::Text("Quads: %d", Renderer::GetStats().DrawCount);
-
-	for (auto& result : m_ProfileResults)
-	{
-		char label[50];
-		strcpy(label, "%.3fms ");
-		strcat(label, result.Name);
-		ImGui::Text(label, result.Time);
-	}
-	m_ProfileResults.clear();
 
 	ImGui::End();
 }

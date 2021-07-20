@@ -21,14 +21,6 @@ private:
 	GLuint m_QuadVA = 0, m_QuadVB = 0, m_QuadIB = 0;
 	GLCore::Utils::OrthographicCameraController m_CameraController;
 
-	struct ProfileResult
-	{
-		const char* Name;
-		float Time;
-	};
-
-	std::vector<ProfileResult> m_ProfileResults;
-
 	glm::vec4 m_SquareColor = { 0.8f, 0.2f, 0.3f, 1.0f };
 
 };

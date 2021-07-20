@@ -13,6 +13,7 @@
 #include <unordered_set>
 
 #include "GLCore/Core/Log.h"
+#include "GLCore/Core/Debug/Instrumentation.h"
 
 #ifdef GLCORE_PLATFORM_WINDOWS
 	#include <Windows.h>
