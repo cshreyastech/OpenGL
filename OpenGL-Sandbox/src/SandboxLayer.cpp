@@ -96,13 +96,28 @@ void SandboxLayer::OnUpdate(Timestep ts)
 		s_Instance->ResetStats();
 		s_Instance->BeginBatch();
 
-		float quad_size = 1.0f;
+		const glm::vec2 TexIndices[] = {
+			{ 0.0f, 0.0f },
+			{ 1.0f, 0.0f },
+			{ 1.0f, 1.0f },
+			{ 0.0f, 1.0f }
+		};
+
+		float quad_size = 0.25f;
 		for (float y = -10.0f; y < 10.0f; y += quad_size)
 		{
 			for (float x = -10.0f; x < 10.0f; x += quad_size)
 			{
 				glm::vec4 color = { (x + 10) / 20.0f, 0.2f, (y + 10) / 20.0f, 1.0f };
-				s_Instance->DrawQuad({ x, y }, { quad_size, quad_size }, color);
+
+				const glm::vec3 positions[] = {
+					{			  x,			 y, 0.0f },
+					{ x + quad_size,			 y, 0.0f },
+					{ x + quad_size, y + quad_size, 0.0f },
+					{			  x, y + quad_size, 0.0f }
+				};
+
+				s_Instance->DrawQuad(positions, color, TexIndices);
 			}
 		}
 

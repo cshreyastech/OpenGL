@@ -13,26 +13,38 @@ struct Vertex
 	float TexIndex;
 };
 
+struct Stats
+{
+	uint32_t DrawCount = 0;
+	uint32_t QuadCount = 0;
+	uint32_t VertexCount = 0;
+	uint32_t IndexCount = 0;
+};
+
 class QuadShape
 {
 public:
-	QuadShape(const std::string QuadShape, int IndexOffset, int VertexOffset, const size_t MaxQuadCount);
+	QuadShape(const std::string quadShape, int* indicesSequence, const GLenum mode, const int indexOffset, const int vertexOffset, const size_t maxQuadCount);
 	~QuadShape();
 
-	void DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+	void DrawQuad(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
+	void Flush();
 
+	const Stats& GetStats();
+	void ResetStats();
 public:
+	const GLenum Mode;
 	GLuint quadVA = 0;
 	GLuint quadVB = 0;
 	GLuint quadIB = 0;
 
 	//Indices to draw when flushed
-	uint32_t indexOffset = 0;
-	uint32_t vertexOffset = 0;
+	const uint32_t IndexOffset = 0;
+	const uint32_t VertexOffset = 0;
 
-	const size_t maxQuadCount = 0;
-	const size_t maxVertexCount = 0;
-	const size_t maxIndexCount;
+	const size_t MaxQuadCount = 0;
+	const size_t MaxVertexCount = 0;
+	const size_t MaxIndexCount;
 
 	//Points beginning of the buffer. This is in CPU
 	Vertex* quadBuffer = nullptr;
@@ -48,4 +60,6 @@ public:
 	GLuint WhiteTexture = 0;
 	uint32_t WhiteTextureSlot = 0;
 	uint32_t indexCount = 0;
+
+	struct Stats RenderStats;
 };

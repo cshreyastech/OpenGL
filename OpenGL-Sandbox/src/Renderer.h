@@ -4,13 +4,6 @@
 #include "QuadShape.h"
 
 
-struct Stats
-{
-	uint32_t DrawCount = 0;
-	uint32_t QuadCount = 0;
-	uint32_t VertexCount = 0;
-	uint32_t IndexCount = 0;
-};
 
 class Renderer
 {
@@ -27,7 +20,7 @@ public:
 	void Flush();
 
 	//Flat colored Quad
-	void DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+	void DrawQuad(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
 
 
 
@@ -35,10 +28,6 @@ public:
 	void ResetStats();
 
 private:
-	//Renderer() {}
 	static Renderer* s_Instance;
-	//QuadShape quadShape;
 	QuadShape* quadShape;
-
-	struct Stats RenderStats;
 };

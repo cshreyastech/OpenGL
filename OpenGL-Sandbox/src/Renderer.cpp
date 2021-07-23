@@ -27,7 +27,7 @@ Renderer::~Renderer()
 
 void Renderer::Init()
 {
-	quadShape = new QuadShape("SquareQuad", 6, 4, 20);
+	quadShape = new QuadShape("SquareQuad", new int[6]{ 0, 1, 2, 2, 3, 0 }, GL_TRIANGLES, 6, 4, 1000);
 }
 
 void Renderer::Shutdown()
@@ -35,7 +35,6 @@ void Renderer::Shutdown()
 	glDeleteVertexArrays(1, &quadShape->quadVA);
 	glDeleteBuffers(1, &quadShape->quadVB);
 	glDeleteBuffers(1, &quadShape->quadIB);
-
 	glDeleteTextures(1, &quadShape->WhiteTexture);
 
 	delete[] quadShape->quadBuffer;
@@ -62,36 +61,30 @@ void Renderer::Flush()
 		glBindTextureUnit(i, quadShape->TextureSlots[i]);
 
 	glBindVertexArray(quadShape->quadVA);
-	glDrawElements(GL_TRIANGLES, quadShape->indexCount, GL_UNSIGNED_INT, nullptr);
+	glDrawElements(quadShape->Mode, quadShape->indexCount, GL_UNSIGNED_INT, nullptr);
 
-	RenderStats.DrawCount++;
-
-	quadShape->indexCount = 0;
-	quadShape->TextureSlotIndex = 1;
+	quadShape->Flush();
 }
 
-void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+void Renderer::DrawQuad(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[])
 {
-	if (quadShape->indexCount >= quadShape->maxIndexCount)
+	if (quadShape->indexCount >= quadShape->MaxIndexCount)
 	{
 		EndBatch();
 		Flush();
 		BeginBatch();
 	}
-	quadShape->DrawQuad(position, size, color);
 
-	RenderStats.QuadCount++;
-	RenderStats.IndexCount = RenderStats.QuadCount * 6;
-	RenderStats.VertexCount = RenderStats.QuadCount * 4;
+	quadShape->DrawQuad(positions, color, TexIndices);
 }
 
 
 const Stats& Renderer::GetStats()
 {
-	return RenderStats;
+	return quadShape->GetStats();
 }
 
 void Renderer::ResetStats()
 {
-	memset(&RenderStats, 0, sizeof(Stats));
+	quadShape->ResetStats();
 }

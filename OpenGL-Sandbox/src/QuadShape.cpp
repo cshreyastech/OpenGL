@@ -4,11 +4,11 @@
 #include <glad\glad.h>
 
 
-QuadShape::QuadShape(const std::string QuadShape, int IndexOffset, int VertexOffset, const size_t MaxQuadCount)
-	: indexOffset(IndexOffset), vertexOffset(VertexOffset), maxQuadCount(MaxQuadCount),
-		maxVertexCount(maxQuadCount * vertexOffset), maxIndexCount(maxQuadCount * indexOffset)
+QuadShape::QuadShape(const std::string quadShape, int* indicesSequence, const GLenum mode, const int indexOffset, const int vertexOffset, const size_t maxQuadCount)
+	: IndexOffset(indexOffset), Mode(mode), VertexOffset(vertexOffset), MaxQuadCount(maxQuadCount),
+		MaxVertexCount(maxQuadCount * vertexOffset), MaxIndexCount(MaxQuadCount * IndexOffset)
 	{
-		quadBuffer = new Vertex[maxVertexCount];
+		quadBuffer = new Vertex[MaxVertexCount];
 
 		glCreateVertexArrays(1, &quadVA);
 		glBindVertexArray(quadVA);
@@ -16,7 +16,7 @@ QuadShape::QuadShape(const std::string QuadShape, int IndexOffset, int VertexOff
 
 		glCreateBuffers(1, &quadVB);
 		glBindBuffer(GL_ARRAY_BUFFER, quadVB);
-		glBufferData(GL_ARRAY_BUFFER, maxVertexCount * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, MaxVertexCount * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 
 		glEnableVertexArrayAttrib(quadVA, 0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Position));
@@ -31,21 +31,18 @@ QuadShape::QuadShape(const std::string QuadShape, int IndexOffset, int VertexOff
 		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TexIndex));
 
 		uint32_t *indices;
-		indices = new uint32_t[maxIndexCount];
+		indices = new uint32_t[MaxIndexCount];
+
 
 		uint32_t offset = 0;
-		for (size_t i = 0; i < maxIndexCount; i += 6)
+		for (size_t i = 0; i < MaxIndexCount; i += IndexOffset)
 		{
-			indices[i + 0] = 0 + offset;
-			indices[i + 1] = 1 + offset;
-			indices[i + 2] = 2 + offset;
+			for(int j = 0; j < IndexOffset; j++)
+				indices[i + j] = indicesSequence[j] + offset;
 
-			indices[i + 3] = 2 + offset;
-			indices[i + 4] = 3 + offset;
-			indices[i + 5] = 0 + offset;
-
-			offset += 4;
+			offset += VertexOffset;
 		}
+		delete[] indicesSequence;
 
 		/*std::cout << "NEW: "
 			<< "MaxIndexCount: " << maxIndexCount
@@ -56,7 +53,7 @@ QuadShape::QuadShape(const std::string QuadShape, int IndexOffset, int VertexOff
 		//Sending to GPU
 		glCreateBuffers(1, &quadIB);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadIB);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * maxIndexCount, indices, GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * MaxIndexCount, indices, GL_STATIC_DRAW);
 
 
 		delete[] indices;
@@ -83,42 +80,64 @@ QuadShape::~QuadShape()
 
 }
 
-void QuadShape::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+void QuadShape::DrawQuad(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[])
 {
-	/*if (s_Data.IndexCount >= MaxIndexCount)
-	{
-		EndBatch();
-		Flush();
-		BeginBatch();
-	}*/
 	float textureIndex = 0.0f;
 
-	quadBufferPtr->Position = { position.x, position.y, 0.0f };
-	quadBufferPtr->Color = color;
-	quadBufferPtr->TexCoords = { 0.0f, 0.0f };
-	quadBufferPtr->TexIndex = textureIndex;
-	quadBufferPtr++;
+	for (int i = 0; i < VertexOffset; i++)
+	{
+		quadBufferPtr->Position = positions[i];
+		quadBufferPtr->Color = color;
+		quadBufferPtr->TexCoords = TexIndices[i];
+		quadBufferPtr->TexIndex = textureIndex;
+		quadBufferPtr++;
+	}
 
-	quadBufferPtr->Position = { position.x + size.x, position.y, 0.0f };
-	quadBufferPtr->Color = color;
-	quadBufferPtr->TexCoords = { 1.0f, 0.0f };
-	quadBufferPtr->TexIndex = textureIndex;
-	quadBufferPtr++;
+	//quadBufferPtr->Position = positions[0];//{ position.x, position.y, 0.0f };
+	//quadBufferPtr->Color = color;
+	//quadBufferPtr->TexCoords = TexIndices[0];//{ 0.0f, 0.0f };
+	//quadBufferPtr->TexIndex = textureIndex;
+	//quadBufferPtr++;
 
-	quadBufferPtr->Position = { position.x + size.x, position.y + size.y, 0.0f };
-	quadBufferPtr->Color = color;
-	quadBufferPtr->TexCoords = { 1.0f, 1.0f };
-	quadBufferPtr->TexIndex = textureIndex;
-	quadBufferPtr++;
+	//quadBufferPtr->Position = positions[1]; //{ position.x + size.x, position.y, 0.0f };
+	//quadBufferPtr->Color = color;
+	//quadBufferPtr->TexCoords = TexIndices[1]; //{ 1.0f, 0.0f };
+	//quadBufferPtr->TexIndex = textureIndex;
+	//quadBufferPtr++;
 
-	quadBufferPtr->Position = { position.x, position.y + size.y, 0.0f };
-	quadBufferPtr->Color = color;
-	quadBufferPtr->TexCoords = { 0.0f, 1.0f };
-	quadBufferPtr->TexIndex = textureIndex;
-	quadBufferPtr++;
+	//quadBufferPtr->Position = positions[2]; //{ position.x + size.x, position.y + size.y, 0.0f };
+	//quadBufferPtr->Color = color;
+	//quadBufferPtr->TexCoords = TexIndices[2]; //{ 1.0f, 1.0f };
+	//quadBufferPtr->TexIndex = textureIndex;
+	//quadBufferPtr++;
 
-	indexCount += indexOffset;
-	//s_Data.RenderStats.QuadCount++;
-	//s_Data.RenderStats.VertexCount = s_Data.RenderStats.QuadCount * 4;
-	//s_Data.RenderStats.IndexCount = s_Data.RenderStats.QuadCount * 6;
+	//quadBufferPtr->Position = positions[3]; //{ position.x, position.y + size.y, 0.0f };
+	//quadBufferPtr->Color = color;
+	//quadBufferPtr->TexCoords = TexIndices[3]; //{ 0.0f, 1.0f };
+	//quadBufferPtr->TexIndex = textureIndex;
+	//quadBufferPtr++;
+
+	indexCount += IndexOffset;
+
+	RenderStats.QuadCount++;
+	RenderStats.VertexCount = RenderStats.QuadCount * VertexOffset;
+	RenderStats.IndexCount = RenderStats.QuadCount * IndexOffset;
+}
+
+void QuadShape::Flush()
+{
+	RenderStats.DrawCount++;
+	indexCount = 0;
+	TextureSlotIndex = 1;
+}
+
+
+const Stats& QuadShape::GetStats()
+{
+	return RenderStats;
+}
+
+void QuadShape::ResetStats()
+{
+	memset(&RenderStats, 0, sizeof(Stats));
 }
