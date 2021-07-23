@@ -1,6 +1,6 @@
 #include "SandboxLayer.h"
 #include <stb_image/stb_image.h>
-#include "Renderer.h"
+
 
 using namespace GLCore;
 using namespace GLCore::Utils;
@@ -37,7 +37,6 @@ static GLuint LoadTexture(const std::string& path)
 void SandboxLayer::OnAttach()
 {
 	EnableGLDebugging();
-
 	m_Shader = std::unique_ptr<Shader>(Shader::FromGLSLTextFiles(
 		"assets/shaders/shader.glsl.vert",
 		"assets/shaders/shader.glsl.frag"
@@ -45,12 +44,13 @@ void SandboxLayer::OnAttach()
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
-	Renderer::Init();
+	s_Instance = new Renderer();
+	s_Instance->Init();
 }
 
 void SandboxLayer::OnDetach()
 {
-	Renderer::Shutdown();
+	s_Instance->Shutdown();
 }
 
 void SandboxLayer::OnEvent(Event& event)
@@ -84,28 +84,30 @@ void SandboxLayer::OnUpdate(Timestep ts)
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glUseProgram(m_Shader->GetRendererID());
 
-	Renderer::ResetStats();
-	Renderer::BeginBatch();
+	{ 
+			GLCORE_PROFILE_SCOPE("MVP");
+			const auto& vp = m_CameraController.GetCamera().GetViewProjectionMatrix();
+			SetUniformMat4(m_Shader->GetRendererID(), "u_ViewProj", vp);
+			SetUniformMat4(m_Shader->GetRendererID(), "u_Transform", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+	}
 
 	{
 		GLCORE_PROFILE_SCOPE("Renderer Draw");
-		const auto& vp = m_CameraController.GetCamera().GetViewProjectionMatrix();
-		SetUniformMat4(m_Shader->GetRendererID(), "u_ViewProj", vp);
-		SetUniformMat4(m_Shader->GetRendererID(), "u_Transform", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+		s_Instance->ResetStats();
+		s_Instance->BeginBatch();
 
-		for (float y = -10.0f; y < 10.0f; y += 0.25f)
+		float quad_size = 1.0f;
+		for (float y = -10.0f; y < 10.0f; y += quad_size)
 		{
-			for (float x = -10.0f; x < 10.0f; x += 0.25f)
+			for (float x = -10.0f; x < 10.0f; x += quad_size)
 			{
 				glm::vec4 color = { (x + 10) / 20.0f, 0.2f, (y + 10) / 20.0f, 1.0f };
-				Renderer::DrawQuad({ x, y }, { 0.25f, 0.25f }, color);
+				s_Instance->DrawQuad({ x, y }, { quad_size, quad_size }, color);
 			}
 		}
 
-		Renderer::EndBatch();
-
-
-		Renderer::Flush();
+		s_Instance->EndBatch();
+		s_Instance->Flush();
 	}
 }
 
@@ -114,8 +116,9 @@ void SandboxLayer::OnImGuiRender()
 	GLCORE_PROFILE_FUNCTION();
 
 	ImGui::Begin("Controls");
-	ImGui::Text("Quads: %d", Renderer::GetStats().QuadCount);
-	ImGui::Text("Quads: %d", Renderer::GetStats().DrawCount);
-
+	ImGui::Text("Quads: %d", s_Instance->GetStats().QuadCount);
+	ImGui::Text("DrawCount: %d", s_Instance->GetStats().DrawCount);
+	ImGui::Text("VertexCount: %d", s_Instance->GetStats().VertexCount);
+	ImGui::Text("IndexCount: %d", s_Instance->GetStats().IndexCount);
 	ImGui::End();
 }

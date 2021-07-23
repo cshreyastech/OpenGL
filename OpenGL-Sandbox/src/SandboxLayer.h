@@ -5,6 +5,9 @@
 #include <memory>
 #include<glm/glm.hpp>
 
+#include "Renderer.h"
+#include "QuadShape.h"
+
 class SandboxLayer : public GLCore::Layer
 {
 public:
@@ -22,5 +25,5 @@ private:
 	GLCore::Utils::OrthographicCameraController m_CameraController;
 
 	glm::vec4 m_SquareColor = { 0.8f, 0.2f, 0.3f, 1.0f };
-
+	Renderer* s_Instance = nullptr;
 };
