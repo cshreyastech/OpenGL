@@ -26,13 +26,20 @@ class QuadShape
 public:
 	QuadShape(const std::string quadShape, int* indicesSequence, const GLenum mode, const int indexOffset, const int vertexOffset, const size_t maxQuadCount);
 	~QuadShape();
+	void Shutdown();
+
+	void BeginBatch();
+	void EndBatch();
+	void Flush();
+
+
+
 
 	void DrawQuad(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
-	void Flush();
 
 	const Stats& GetStats();
 	void ResetStats();
-public:
+private:
 	const GLenum Mode;
 	GLuint quadVA = 0;
 	GLuint quadVB = 0;

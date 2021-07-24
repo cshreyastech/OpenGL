@@ -1,4 +1,4 @@
-#include "QuadShape.h"
+#include "QuadHandler.h"
 #include <GLCore.h>
 #include <array>
 #include <glad\glad.h>
@@ -77,11 +77,42 @@ QuadShape::QuadShape(const std::string quadShape, int* indicesSequence, const GL
 
 QuadShape::~QuadShape()
 {
+}
 
+void QuadShape::Shutdown()
+{
+	glDeleteVertexArrays(1, &quadVA);
+	glDeleteBuffers(1, &quadVB);
+	glDeleteBuffers(1, &quadIB);
+	glDeleteTextures(1, &WhiteTexture);
+
+	delete[] quadBuffer;
+}
+
+void QuadShape::BeginBatch()
+{
+	// Resets point to the begining
+	// pointer keeps traks of where we copying the data to 
+	// in the cpu side vertex buffer
+	quadBufferPtr = quadBuffer;
+}
+
+void QuadShape::EndBatch()
+{
+	GLsizeiptr size = (uint8_t*)quadBufferPtr - (uint8_t*)quadBuffer;
+	glBindBuffer(GL_ARRAY_BUFFER, quadVB);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, size, quadBuffer);
 }
 
 void QuadShape::DrawQuad(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[])
 {
+	if (indexCount >= MaxIndexCount)
+	{
+		EndBatch();
+		Flush();
+		BeginBatch();
+	}
+
 	float textureIndex = 0.0f;
 
 	for (int i = 0; i < VertexOffset; i++)
@@ -93,30 +124,6 @@ void QuadShape::DrawQuad(const glm::vec3 positions[], const glm::vec4& color, co
 		quadBufferPtr++;
 	}
 
-	//quadBufferPtr->Position = positions[0];//{ position.x, position.y, 0.0f };
-	//quadBufferPtr->Color = color;
-	//quadBufferPtr->TexCoords = TexIndices[0];//{ 0.0f, 0.0f };
-	//quadBufferPtr->TexIndex = textureIndex;
-	//quadBufferPtr++;
-
-	//quadBufferPtr->Position = positions[1]; //{ position.x + size.x, position.y, 0.0f };
-	//quadBufferPtr->Color = color;
-	//quadBufferPtr->TexCoords = TexIndices[1]; //{ 1.0f, 0.0f };
-	//quadBufferPtr->TexIndex = textureIndex;
-	//quadBufferPtr++;
-
-	//quadBufferPtr->Position = positions[2]; //{ position.x + size.x, position.y + size.y, 0.0f };
-	//quadBufferPtr->Color = color;
-	//quadBufferPtr->TexCoords = TexIndices[2]; //{ 1.0f, 1.0f };
-	//quadBufferPtr->TexIndex = textureIndex;
-	//quadBufferPtr++;
-
-	//quadBufferPtr->Position = positions[3]; //{ position.x, position.y + size.y, 0.0f };
-	//quadBufferPtr->Color = color;
-	//quadBufferPtr->TexCoords = TexIndices[3]; //{ 0.0f, 1.0f };
-	//quadBufferPtr->TexIndex = textureIndex;
-	//quadBufferPtr++;
-
 	indexCount += IndexOffset;
 
 	RenderStats.QuadCount++;
@@ -126,11 +133,16 @@ void QuadShape::DrawQuad(const glm::vec3 positions[], const glm::vec4& color, co
 
 void QuadShape::Flush()
 {
+	for (uint32_t i = 0; i < TextureSlotIndex; i++)
+		glBindTextureUnit(i, TextureSlots[i]);
+
+	glBindVertexArray(quadVA);
+	glDrawElements(Mode, indexCount, GL_UNSIGNED_INT, nullptr);
+
 	RenderStats.DrawCount++;
 	indexCount = 0;
 	TextureSlotIndex = 1;
 }
-
 
 const Stats& QuadShape::GetStats()
 {

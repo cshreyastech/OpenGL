@@ -6,7 +6,6 @@
 #include<glm/glm.hpp>
 
 #include "Renderer.h"
-#include "QuadShape.h"
 
 class SandboxLayer : public GLCore::Layer
 {
@@ -21,7 +20,7 @@ public:
 	virtual void OnImGuiRender() override;
 private:
 	std::unique_ptr<GLCore::Utils::Shader> m_Shader;
-	GLuint m_QuadVA = 0, m_QuadVB = 0, m_QuadIB = 0;
+	//GLuint m_QuadVA = 0, m_QuadVB = 0, m_QuadIB = 0;
 	GLCore::Utils::OrthographicCameraController m_CameraController;
 
 	glm::vec4 m_SquareColor = { 0.8f, 0.2f, 0.3f, 1.0f };

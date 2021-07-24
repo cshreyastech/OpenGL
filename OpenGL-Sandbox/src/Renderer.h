@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include "QuadShape.h"
+#include "QuadHandler.h"
 
 
 
@@ -21,8 +21,6 @@ public:
 
 	//Flat colored Quad
 	void DrawQuad(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
-
-
 
 	const Stats& GetStats();
 	void ResetStats();
