@@ -5,6 +5,13 @@
 using namespace GLCore;
 using namespace GLCore::Utils;
 
+
+//float rez = 10.0f;
+const float quad_size = 10.0f;
+const float rows = 100.0f / quad_size;
+const float cols = 100.0f / quad_size;
+
+
 SandboxLayer::SandboxLayer()
 	: Layer("Sandbox"), m_CameraController(16.0f / 9.0f)
 {
@@ -96,28 +103,20 @@ void SandboxLayer::OnUpdate(Timestep ts)
 		s_Instance->ResetStats();
 		s_Instance->BeginBatch();
 
+
+		//GenerateQuads();
+
 		const glm::vec2 TexIndices[] = {
-			{ 0.0f, 0.0f },
-			{ 1.0f, 0.0f },
-			{ 1.0f, 1.0f },
-			{ 0.0f, 1.0f }
+			{ 0.0f, 0.0f }
 		};
 
-		float quad_size = 0.25f;
-		for (float y = -10.0f; y < 10.0f; y += quad_size)
+		glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+		for (float y = -rows; y <= rows; y += quad_size)
 		{
-			for (float x = -10.0f; x < 10.0f; x += quad_size)
+			for (float x = -cols; x <= cols; x += quad_size)
 			{
-				glm::vec4 color = { (x + 10) / 20.0f, 0.2f, (y + 10) / 20.0f, 1.0f };
-
-				const glm::vec3 positions[] = {
-					{			  x,			 y, 0.0f },
-					{ x + quad_size,			 y, 0.0f },
-					{ x + quad_size, y + quad_size, 0.0f },
-					{			  x, y + quad_size, 0.0f }
-				};
-
-				s_Instance->DrawQuad(positions, color, TexIndices);
+				s_Instance->PlotPoints(glm::vec3(x, y, 0.0f), color, TexIndices);
 			}
 		}
 
@@ -136,4 +135,32 @@ void SandboxLayer::OnImGuiRender()
 	ImGui::Text("VertexCount: %d", s_Instance->GetStats().VertexCount);
 	ImGui::Text("IndexCount: %d", s_Instance->GetStats().IndexCount);
 	ImGui::End();
+}
+
+void SandboxLayer::GenerateQuads()
+{
+	const glm::vec2 TexIndices[] = {
+	{ 0.0f, 0.0f },
+	{ 1.0f, 0.0f },
+	{ 1.0f, 1.0f },
+	{ 0.0f, 1.0f }
+	};
+
+	
+	for (float y = -rows; y < rows; y += quad_size)
+	{
+		for (float x = -cols; x < cols; x += quad_size)
+		{
+			glm::vec4 color = { (x + 10) / 20.0f, 0.2f, (y + 10) / 20.0f, 1.0f };
+
+			const glm::vec3 positions[] = {
+				{			  x,			 y, 0.0f },
+				{ x + quad_size,			 y, 0.0f },
+				{ x + quad_size, y + quad_size, 0.0f },
+				{			  x, y + quad_size, 0.0f }
+			};
+
+			s_Instance->DrawQuad(positions, color, TexIndices);
+		}
+	}
 }

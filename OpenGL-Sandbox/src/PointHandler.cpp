@@ -1,18 +1,15 @@
-#include "QuadHandler.h"
+#include "PointHandler.h"
 #include <GLCore.h>
 #include <array>
 #include <glad\glad.h>
 
-
-QuadShape::QuadShape(const std::string quadShape, int* indicesSequence, const GLenum mode, const int indexOffset, const int vertexOffset, const size_t maxQuadCount)
-	: IndexOffset(indexOffset), Mode(mode), VertexOffset(vertexOffset), MaxQuadCount(maxQuadCount),
-		MaxVertexCount(maxQuadCount * vertexOffset), MaxIndexCount(MaxQuadCount * IndexOffset)
+PointHandler::PointHandler(const std::string quadShape, const size_t maxVertexCount)
+	: MaxVertexCount(maxVertexCount)
 	{
 		quadBuffer = new Vertex[MaxVertexCount];
 
 		glCreateVertexArrays(1, &quadVA);
 		glBindVertexArray(quadVA);
-
 
 		glCreateBuffers(1, &quadVB);
 		glBindBuffer(GL_ARRAY_BUFFER, quadVB);
@@ -31,33 +28,6 @@ QuadShape::QuadShape(const std::string quadShape, int* indicesSequence, const GL
 		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TexIndex));
 
 		
-		uint32_t* indices;
-		indices = new uint32_t[MaxIndexCount];
-		uint32_t offset = 0;
-		for (size_t i = 0; i < MaxIndexCount; i += IndexOffset)
-		{
-			for (int j = 0; j < IndexOffset; j++)
-				indices[i + j] = indicesSequence[j] + offset;
-
-			offset += VertexOffset;
-		}
-		delete[] indicesSequence;
-
-		/*std::cout << "NEW: "
-			<< "MaxIndexCount: " << maxIndexCount
-			<< ", sizeof(indices): " << sizeof(indices)
-			<< ", sizeof(uint32_t): " << sizeof(uint32_t) << std::endl;*/
-
-
-			//Sending to GPU
-		glCreateBuffers(1, &quadIB);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadIB);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * MaxIndexCount, indices, GL_STATIC_DRAW);
-
-
-		delete[] indices;
-		
-
 		//1 x 1 white texture
 		glCreateTextures(GL_TEXTURE_2D, 1, &WhiteTexture);
 		glBindTexture(GL_TEXTURE_2D, WhiteTexture);
@@ -74,21 +44,20 @@ QuadShape::QuadShape(const std::string quadShape, int* indicesSequence, const GL
 			TextureSlots[i] = 0;
 	}
 
-QuadShape::~QuadShape()
+PointHandler::~PointHandler()
 {
 }
 
-void QuadShape::Shutdown()
+void PointHandler::Shutdown()
 {
 	glDeleteVertexArrays(1, &quadVA);
 	glDeleteBuffers(1, &quadVB);
-	glDeleteBuffers(1, &quadIB);
 	glDeleteTextures(1, &WhiteTexture);
 
 	delete[] quadBuffer;
 }
 
-void QuadShape::BeginBatch()
+void PointHandler::BeginBatch()
 {
 	// Resets point to the begining
 	// pointer keeps traks of where we copying the data to 
@@ -96,16 +65,16 @@ void QuadShape::BeginBatch()
 	quadBufferPtr = quadBuffer;
 }
 
-void QuadShape::EndBatch()
+void PointHandler::EndBatch()
 {
 	GLsizeiptr size = (uint8_t*)quadBufferPtr - (uint8_t*)quadBuffer;
 	glBindBuffer(GL_ARRAY_BUFFER, quadVB);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, size, quadBuffer);
 }
 
-void QuadShape::DrawQuad(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[])
+void PointHandler::PlotPoint(const glm::vec3& positions, const glm::vec4& color, const glm::vec2 TexIndices[])
 {
-	if (indexCount >= MaxIndexCount)
+	if (vertexCount >= MaxVertexCount)
 	{
 		EndBatch();
 		Flush();
@@ -114,41 +83,54 @@ void QuadShape::DrawQuad(const glm::vec3 positions[], const glm::vec4& color, co
 
 	float textureIndex = 0.0f;
 
-	for (int i = 0; i < VertexOffset; i++)
+	quadBufferPtr->Position = positions;
+	quadBufferPtr->Color = color;
+	quadBufferPtr->TexCoords = TexIndices[0];
+	quadBufferPtr->TexIndex = textureIndex;
+	quadBufferPtr++;
+
+	vertexCount++;
+
+	RenderStats.QuadCount++;
+
+	/*std::cout << "Inside PointHandler::PlotPoint: positions.size()" << positions.size() << std::endl;
+	for (int i = 0; i < positions.size(); i++)
 	{
 		quadBufferPtr->Position = positions[i];
 		quadBufferPtr->Color = color;
 		quadBufferPtr->TexCoords = TexIndices[i];
 		quadBufferPtr->TexIndex = textureIndex;
 		quadBufferPtr++;
-	}
+		textureIndex++;
 
-	indexCount += IndexOffset;
+		vertexCount++;
+	}*/
+	
 
-	RenderStats.QuadCount++;
-	RenderStats.VertexCount = RenderStats.QuadCount * VertexOffset;
-	RenderStats.IndexCount = RenderStats.QuadCount * IndexOffset;
+	
+	RenderStats.VertexCount = RenderStats.QuadCount;
 }
 
-void QuadShape::Flush()
+void PointHandler::Flush()
 {
 	for (uint32_t i = 0; i < TextureSlotIndex; i++)
 		glBindTextureUnit(i, TextureSlots[i]);
 
 	glBindVertexArray(quadVA);
-	glDrawElements(Mode, indexCount, GL_UNSIGNED_INT, nullptr);
+	glPointSize(10);
+	glDrawArrays(GL_POINTS, 0, vertexCount);
 
 	RenderStats.DrawCount++;
-	indexCount = 0;
+	vertexCount = 0;
 	TextureSlotIndex = 1;
 }
 
-const Stats& QuadShape::GetStats()
+const Stats& PointHandler::GetStats()
 {
 	return RenderStats;
 }
 
-void QuadShape::ResetStats()
+void PointHandler::ResetStats()
 {
 	memset(&RenderStats, 0, sizeof(Stats));
 }

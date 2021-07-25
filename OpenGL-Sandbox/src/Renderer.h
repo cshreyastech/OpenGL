@@ -1,8 +1,8 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include "QuadHandler.h"
-
+//#include "QuadHandler.h"
+#include "PointHandler.h"
 
 
 class Renderer
@@ -21,11 +21,13 @@ public:
 
 	//Flat colored Quad
 	void DrawQuad(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
+	void PlotPoints(const glm::vec3& positions, const glm::vec4& color, const glm::vec2 TexIndices[]);
 
 	const Stats& GetStats();
 	void ResetStats();
 
 private:
 	static Renderer* s_Instance;
-	QuadShape* quadShape;
+	//QuadShape* quadShape;
+	PointHandler* pointHandler;
 };

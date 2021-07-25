@@ -19,8 +19,10 @@ public:
 	virtual void OnUpdate(GLCore::Timestep ts) override;
 	virtual void OnImGuiRender() override;
 private:
+	void GenerateQuads();
+
+private:
 	std::unique_ptr<GLCore::Utils::Shader> m_Shader;
-	//GLuint m_QuadVA = 0, m_QuadVB = 0, m_QuadIB = 0;
 	GLCore::Utils::OrthographicCameraController m_CameraController;
 
 	glm::vec4 m_SquareColor = { 0.8f, 0.2f, 0.3f, 1.0f };
