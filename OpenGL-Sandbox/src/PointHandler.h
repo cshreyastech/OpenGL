@@ -1,31 +1,12 @@
 #pragma once
-#include <string>
-#include <glm/glm.hpp>
-#include <GLCore.h>
-#include <array>
-#include <glad\glad.h>
+#include "ShapeHandler.h"
 
-struct Vertex
-{
-	glm::vec3 Position;
-	glm::vec4 Color;
-	glm::vec2 TexCoords;
-	float TexIndex;
-};
-
-struct Stats
-{
-	uint32_t DrawCount = 0;
-	uint32_t QuadCount = 0;
-	uint32_t VertexCount = 0;
-	uint32_t IndexCount = 0;
-};
-
-class PointHandler
+class PointHandler : public ShapeHandler
 {
 public:
 	PointHandler(const std::string quadShape, const size_t maxVertexCount);
-	~PointHandler();
+	virtual ~PointHandler();
+
 	void Shutdown();
 
 	void BeginBatch();

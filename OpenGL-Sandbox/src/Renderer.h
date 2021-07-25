@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
-//#include "QuadHandler.h"
+#include "QuadHandler.h"
 #include "PointHandler.h"
 
 
@@ -10,7 +10,6 @@ class Renderer
 public:
 	Renderer();
 	~Renderer();
-
 
 	void Init();
 	void Shutdown();
@@ -28,6 +27,6 @@ public:
 
 private:
 	static Renderer* s_Instance;
-	//QuadShape* quadShape;
+	QuadShape* quadShape;
 	PointHandler* pointHandler;
 };

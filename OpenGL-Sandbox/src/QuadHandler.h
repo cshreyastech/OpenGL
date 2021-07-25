@@ -1,39 +1,16 @@
 #pragma once
-#include <string>
-#include <glm/glm.hpp>
-#include <GLCore.h>
-#include <array>
-#include <glad\glad.h>
+#include "ShapeHandler.h"
 
-struct Vertex
-{
-	glm::vec3 Position;
-	glm::vec4 Color;
-	glm::vec2 TexCoords;
-	float TexIndex;
-};
-
-struct Stats
-{
-	uint32_t DrawCount = 0;
-	uint32_t QuadCount = 0;
-	uint32_t VertexCount = 0;
-	uint32_t IndexCount = 0;
-};
-
-class QuadShape
+class QuadShape : public ShapeHandler
 {
 public:
 	QuadShape(const std::string quadShape, int* indicesSequence, const GLenum mode, const int indexOffset, const int vertexOffset, const size_t maxQuadCount);
-	~QuadShape();
+	virtual ~QuadShape();
 	void Shutdown();
 
 	void BeginBatch();
 	void EndBatch();
 	void Flush();
-
-
-
 
 	void DrawQuad(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
 

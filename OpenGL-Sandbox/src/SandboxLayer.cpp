@@ -104,7 +104,7 @@ void SandboxLayer::OnUpdate(Timestep ts)
 		s_Instance->BeginBatch();
 
 
-		//GenerateQuads();
+		GenerateQuads();
 
 		const glm::vec2 TexIndices[] = {
 			{ 0.0f, 0.0f }
