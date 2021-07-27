@@ -3,8 +3,8 @@
 #include <array>
 #include <glad\glad.h>
 
-PointHandler::PointHandler(const std::string quadShape, const size_t maxVertexCount)
-	: MaxVertexCount(maxVertexCount)
+PointHandler::PointHandler(const std::string quadShape, const size_t maxPointCount)
+	: MaxPointCount(maxPointCount), MaxVertexCount(maxPointCount)
 	{
 		quadBuffer = new Vertex[MaxVertexCount];
 
@@ -27,7 +27,11 @@ PointHandler::PointHandler(const std::string quadShape, const size_t maxVertexCo
 		glEnableVertexArrayAttrib(quadVA, 3);
 		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TexIndex));
 
-		
+		TextureSlots[0] = WhiteTexture;
+		//memory clear, alternatively use memset
+		for (size_t i = 1; i < MaxTextures; i++)
+			TextureSlots[i] = 0;
+
 		//1 x 1 white texture
 		glCreateTextures(GL_TEXTURE_2D, 1, &WhiteTexture);
 		glBindTexture(GL_TEXTURE_2D, WhiteTexture);
@@ -92,21 +96,6 @@ void PointHandler::PlotPoint(const glm::vec3& positions, const glm::vec4& color,
 	vertexCount++;
 
 	RenderStats.QuadCount++;
-
-	/*std::cout << "Inside PointHandler::PlotPoint: positions.size()" << positions.size() << std::endl;
-	for (int i = 0; i < positions.size(); i++)
-	{
-		quadBufferPtr->Position = positions[i];
-		quadBufferPtr->Color = color;
-		quadBufferPtr->TexCoords = TexIndices[i];
-		quadBufferPtr->TexIndex = textureIndex;
-		quadBufferPtr++;
-		textureIndex++;
-
-		vertexCount++;
-	}*/
-	
-
 	
 	RenderStats.VertexCount = RenderStats.QuadCount;
 }

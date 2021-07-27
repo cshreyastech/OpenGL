@@ -1,29 +1,33 @@
 #pragma once
 #include "ShapeHandler.h"
 
-class PointHandler : public ShapeHandler
+class LineHandler : public ShapeHandler
 {
 public:
-	PointHandler(const std::string quadShape, const size_t maxPointCount);
-	virtual ~PointHandler();
-
+	LineHandler(const std::string lineHandler, const size_t maxLineCount);
+	virtual ~LineHandler();
 	void Shutdown();
 
 	void BeginBatch();
 	void EndBatch();
 	void Flush();
 
-	void PlotPoint(const glm::vec3& positions, const glm::vec4& color, const glm::vec2 TexIndices[]);
+	void DrawLine(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
 
 	const Stats& GetStats();
 	void ResetStats();
 private:
 	GLuint quadVA = 0;
 	GLuint quadVB = 0;
+	GLuint quadIB = 0;
 
-	//Vertices to draw when flushed
-	const size_t MaxPointCount = 0;
+	//Indices to draw when flushed
+	const uint32_t IndexOffset = 2;
+	const uint32_t VertexOffset = 2;
+
+	const size_t MaxLineCount = 0;
 	const size_t MaxVertexCount = 0;
+	const size_t MaxIndexCount = 0;
 
 	//Points beginning of the buffer. This is in CPU
 	Vertex* quadBuffer = nullptr;
@@ -38,7 +42,7 @@ private:
 	uint32_t TextureSlotIndex = 1;
 	GLuint WhiteTexture = 0;
 	uint32_t WhiteTextureSlot = 0;
-	uint32_t vertexCount = 0;
+	uint32_t indexCount = 0;
 
 	struct Stats RenderStats;
 };

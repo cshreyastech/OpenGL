@@ -7,10 +7,12 @@ using namespace GLCore::Utils;
 
 
 //float rez = 10.0f;
-const float quad_size = 10.0f;
-const float rows = 100.0f / quad_size;
-const float cols = 100.0f / quad_size;
+const float quad_size = 1.0f;
+//const float rows = 100.0f / quad_size;
+//const float cols = 100.0f / quad_size;
 
+const float rows = 10.0f;
+const float cols = 10.0f;
 
 SandboxLayer::SandboxLayer()
 	: Layer("Sandbox"), m_CameraController(16.0f / 9.0f)
@@ -104,22 +106,58 @@ void SandboxLayer::OnUpdate(Timestep ts)
 		s_Instance->BeginBatch();
 
 
-		GenerateQuads();
+		//GenerateQuads();
+		GeneratePoints();
 
-		const glm::vec2 TexIndices[] = {
-			{ 0.0f, 0.0f }
+		const glm::vec2 TexIndicesPoints[] = {
+			{ 0.0f, 0.0f },
+			{ 0.0f, 1.0f }
 		};
 
 		glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-		for (float y = -rows; y <= rows; y += quad_size)
+		float midd_size = quad_size / 2.0f;
+		float row = rows - quad_size;
+		float col = cols - quad_size;
+		/*glm::vec3 positions[] = {
+						{ -row + midd_size, -col + quad_size, 0.0f },
+						{ -row + quad_size, -col + midd_size, 0.0f }
+					};*/
+
+		/*const glm::vec3 positions[] = {
+						glm::vec3(-5.0f, -5.0f, 0.0f),
+						glm::vec3( 5.0f,  5.0f, 0.0f)
+		};*/
+
+		/*glm::vec3 temp = positions[0];
+		std::cout << "temp: " << temp[0] << std::endl;*/
+		//s_Instance->DrawLine(positions, color, TexIndicesPoints);
+
+		/*positions[0] = glm::vec3(-row + quad_size, -col + midd_size, 0.0f);
+		positions[1] = glm::vec3(-row + midd_size,			   -col, 0.0f);
+		s_Instance->DrawLine(positions, color, TexIndicesPoints);*/
+
+		/*const glm::vec3 positions[] = {
+						{ -10.0f + midd_size,			  -10.0f, 0.0f },
+						{			  -10.0f, -10.0f + midd_size, 0.0f },
+		};*/
+
+		//s_Instance->DrawLine(positions, color, TexIndicesPoints);
+
+		for (float y = -rows; y < rows; y += quad_size)
 		{
-			for (float x = -cols; x <= cols; x += quad_size)
+			for (float x = -cols; x < cols; x += quad_size)
 			{
-				s_Instance->PlotPoints(glm::vec3(x, y, 0.0f), color, TexIndices);
+				const glm::vec3 positions[] = {
+					{ x + midd_size, y + quad_size, 0.0f },
+					{ x + quad_size, y + midd_size, 0.0f }
+				};
+				/*std::cout << x + midd_size << ", " << y + quad_size << " : " 
+						  << x + quad_size << ", " << y + midd_size << std::endl;*/
+				s_Instance->DrawLine(positions, color, TexIndicesPoints);
 			}
 		}
-
+		//std::cout << "--------------------" << std::endl;
 		s_Instance->EndBatch();
 		s_Instance->Flush();
 	}
@@ -161,6 +199,24 @@ void SandboxLayer::GenerateQuads()
 			};
 
 			s_Instance->DrawQuad(positions, color, TexIndices);
+			//s_Instance->DrawLine(positions, color, TexIndices);
+		}
+	}
+}
+
+void SandboxLayer::GeneratePoints()
+{
+	const glm::vec2 TexIndicesPoints[] = {
+	{ 0.0f, 0.0f }
+	};
+
+	glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	for (float y = -rows; y <= rows; y += quad_size)
+	{
+		for (float x = -cols; x <= cols; x += quad_size)
+		{
+			s_Instance->PlotPoints(glm::vec3(x, y, 0.0f), color, TexIndicesPoints);
 		}
 	}
 }

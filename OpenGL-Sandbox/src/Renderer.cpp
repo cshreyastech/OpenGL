@@ -26,38 +26,42 @@ Renderer::~Renderer()
 
 void Renderer::Init()
 {
-	quadShape = new QuadShape("SquareQuad", new int[6]{ 0, 1, 2, 2, 3, 0 }, GL_TRIANGLES, 6, 4, 1000);
-
-	pointHandler = new PointHandler("PlotPoints", 10);
+	//quadHandler = new QuadHandler("SquareQuad", 1000);
+	pointHandler = new PointHandler("PlotPoints", 100);
+	lineHandler = new LineHandler("DrawLine", 100);
 }
 
 void Renderer::Shutdown()
 {
-	quadShape->Shutdown();
+	//quadHandler->Shutdown();
 	pointHandler->Shutdown();
+	lineHandler->Shutdown();
 }
 
 void Renderer::BeginBatch()
 {
-	quadShape->BeginBatch();
+	//quadHandler->BeginBatch();
 	pointHandler->BeginBatch();
+	lineHandler->BeginBatch();
 }
 
 void Renderer::EndBatch()
 {
-	quadShape->EndBatch();
+	//quadHandler->EndBatch();
 	pointHandler->EndBatch();
+	lineHandler->EndBatch();
 }
 
 void Renderer::Flush()
 {
-	quadShape->Flush();
+	//quadHandler->Flush();
 	pointHandler->Flush();
+	lineHandler->Flush();
 }
 
 void Renderer::DrawQuad(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[])
 {
-	quadShape->DrawQuad(positions, color, TexIndices);
+	quadHandler->DrawQuad(positions, color, TexIndices);
 	
 }
 
@@ -66,15 +70,22 @@ void Renderer::PlotPoints(const glm::vec3& positions, const glm::vec4& color, co
 	pointHandler->PlotPoint(positions, color, TexIndices);
 }
 
+void Renderer::DrawLine(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[])
+{
+	lineHandler->DrawLine(positions, color, TexIndices);
+}
+
 
 const Stats& Renderer::GetStats()
 {
-	//return quadShape->GetStats();
-	return pointHandler->GetStats();
+	//return quadHandler->GetStats();
+	//return pointHandler->GetStats();
+	return lineHandler->GetStats();
 }
 
 void Renderer::ResetStats()
 {
-	quadShape->ResetStats();
+	//quadHandler->ResetStats();
 	pointHandler->ResetStats();
+	lineHandler->ResetStats();
 }

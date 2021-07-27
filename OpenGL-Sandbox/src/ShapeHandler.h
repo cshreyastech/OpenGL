@@ -32,8 +32,6 @@ public:
 	virtual void EndBatch() = 0;
 	virtual void Flush() = 0;
 
-	//void DrawQuad(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
-
 	virtual const Stats& GetStats() = 0 ;
 	virtual void ResetStats() = 0;
 };

@@ -1,11 +1,11 @@
 #pragma once
 #include "ShapeHandler.h"
 
-class QuadShape : public ShapeHandler
+class QuadHandler : public ShapeHandler
 {
 public:
-	QuadShape(const std::string quadShape, int* indicesSequence, const GLenum mode, const int indexOffset, const int vertexOffset, const size_t maxQuadCount);
-	virtual ~QuadShape();
+	QuadHandler(const std::string quadHandler, const size_t maxQuadCount);
+	virtual ~QuadHandler();
 	void Shutdown();
 
 	void BeginBatch();
@@ -17,18 +17,17 @@ public:
 	const Stats& GetStats();
 	void ResetStats();
 private:
-	const GLenum Mode;
 	GLuint quadVA = 0;
 	GLuint quadVB = 0;
 	GLuint quadIB = 0;
 
 	//Indices to draw when flushed
-	const uint32_t IndexOffset = 0;
-	const uint32_t VertexOffset = 0;
+	const uint32_t IndexOffset = 6;
+	const uint32_t VertexOffset = 4;
 
 	const size_t MaxQuadCount = 0;
 	const size_t MaxVertexCount = 0;
-	const size_t MaxIndexCount;
+	const size_t MaxIndexCount = 0;
 
 	//Points beginning of the buffer. This is in CPU
 	Vertex* quadBuffer = nullptr;

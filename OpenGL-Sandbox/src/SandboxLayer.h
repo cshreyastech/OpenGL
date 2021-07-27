@@ -20,6 +20,7 @@ public:
 	virtual void OnImGuiRender() override;
 private:
 	void GenerateQuads();
+	void GeneratePoints();
 
 private:
 	std::unique_ptr<GLCore::Utils::Shader> m_Shader;
