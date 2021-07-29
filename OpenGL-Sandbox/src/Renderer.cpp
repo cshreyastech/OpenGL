@@ -26,35 +26,35 @@ Renderer::~Renderer()
 
 void Renderer::Init()
 {
-	//quadHandler = new QuadHandler("SquareQuad", 1000);
-	pointHandler = new PointHandler("PlotPoints", 100);
-	lineHandler = new LineHandler("DrawLine", 100);
+	quadHandler = new QuadHandler("SquareQuad", new int[6]{ 0, 1, 2, 2, 3, 0 }, GL_TRIANGLES, 6, 4, 2);
+	pointHandler = new PointHandler("PlotPoints", GL_POINTS, 1, 1, 3);
+	lineHandler = new LineHandler("DrawLine", new int[2]{ 0, 1 }, GL_LINES,2, 2, 2);
 }
 
 void Renderer::Shutdown()
 {
-	//quadHandler->Shutdown();
+	quadHandler->Shutdown();
 	pointHandler->Shutdown();
 	lineHandler->Shutdown();
 }
 
 void Renderer::BeginBatch()
 {
-	//quadHandler->BeginBatch();
+	quadHandler->BeginBatch();
 	pointHandler->BeginBatch();
 	lineHandler->BeginBatch();
 }
 
 void Renderer::EndBatch()
 {
-	//quadHandler->EndBatch();
+	quadHandler->EndBatch();
 	pointHandler->EndBatch();
 	lineHandler->EndBatch();
 }
 
 void Renderer::Flush()
 {
-	//quadHandler->Flush();
+	quadHandler->Flush();
 	pointHandler->Flush();
 	lineHandler->Flush();
 }
@@ -85,7 +85,7 @@ const Stats& Renderer::GetStats()
 
 void Renderer::ResetStats()
 {
-	//quadHandler->ResetStats();
+	quadHandler->ResetStats();
 	pointHandler->ResetStats();
 	lineHandler->ResetStats();
 }

@@ -21,6 +21,7 @@ public:
 private:
 	void GenerateQuads();
 	void GeneratePoints();
+	void GenerateLines();
 
 private:
 	std::unique_ptr<GLCore::Utils::Shader> m_Shader;
