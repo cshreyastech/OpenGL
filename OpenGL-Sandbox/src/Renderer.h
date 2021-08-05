@@ -4,6 +4,8 @@
 #include "QuadHandler.h"
 #include "PointHandler.h"
 #include "LineHandler.h"
+#include "Handlers.h"
+#include <vector>
 
 class Renderer
 {
@@ -18,13 +20,9 @@ public:
 	void EndBatch();
 	void Flush();
 
-	//Flat colored Quad
-	void DrawQuad(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
-	void PlotPoints(const glm::vec3& positions, const glm::vec4& color, const glm::vec2 TexIndices[]);
-	void DrawLine(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
+	void Draw(ShapeHandlers handler, const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
 
-
-	const Stats& GetStats();
+	const std::vector<Stats> GetStats();
 	void ResetStats();
 
 private:
@@ -32,4 +30,8 @@ private:
 	QuadHandler* quadHandler;
 	PointHandler* pointHandler;
 	LineHandler* lineHandler;
+
+	std::unordered_map<ShapeHandlers, ShapeHandler*> shapeHandlerMap;
+	std::unordered_map<ShapeHandlers, ShapeHandler*>::iterator shapeHandlerMapItr;
 };
+

@@ -23,69 +23,90 @@ Renderer::~Renderer()
 {
 }
 
-
 void Renderer::Init()
 {
-	quadHandler = new QuadHandler("SquareQuad", new int[6]{ 0, 1, 2, 2, 3, 0 }, GL_TRIANGLES, 6, 4, 2);
-	pointHandler = new PointHandler("PlotPoints", GL_POINTS, 1, 1, 3);
-	lineHandler = new LineHandler("DrawLine", new int[2]{ 0, 1 }, GL_LINES,2, 2, 2);
+	shapeHandlerMap[ShapeHandlers::Quad] =
+		new QuadHandler(ShapeHandlers::Quad,
+			new int[6]{ 0, 1, 2, 2, 3, 0 }, GL_TRIANGLES, 6, 4, 2);
+
+	shapeHandlerMap[ShapeHandlers::Line] =
+		new LineHandler(ShapeHandlers::Line,
+			new int[2]{ 0, 1 }, GL_LINES, 2, 2, 2);
+
+	shapeHandlerMap[ShapeHandlers::Point] =
+		new PointHandler(ShapeHandlers::Point, GL_POINTS, 1, 1, 3);
+
+
+
 }
 
 void Renderer::Shutdown()
 {
-	quadHandler->Shutdown();
-	pointHandler->Shutdown();
-	lineHandler->Shutdown();
+	for (shapeHandlerMapItr = shapeHandlerMap.begin();
+		shapeHandlerMapItr != shapeHandlerMap.end();
+		shapeHandlerMapItr++)
+	{
+		shapeHandlerMapItr->second->Shutdown();
+	}
+	
 }
 
 void Renderer::BeginBatch()
 {
-	quadHandler->BeginBatch();
-	pointHandler->BeginBatch();
-	lineHandler->BeginBatch();
+	for (shapeHandlerMapItr = shapeHandlerMap.begin();
+		shapeHandlerMapItr != shapeHandlerMap.end();
+		shapeHandlerMapItr++)
+	{
+		shapeHandlerMapItr->second->BeginBatch();
+	}
 }
 
 void Renderer::EndBatch()
 {
-	quadHandler->EndBatch();
-	pointHandler->EndBatch();
-	lineHandler->EndBatch();
+	for (shapeHandlerMapItr = shapeHandlerMap.begin();
+		shapeHandlerMapItr != shapeHandlerMap.end();
+		shapeHandlerMapItr++)
+	{
+		shapeHandlerMapItr->second->EndBatch();
+	}
 }
 
 void Renderer::Flush()
 {
-	quadHandler->Flush();
-	pointHandler->Flush();
-	lineHandler->Flush();
+	for (shapeHandlerMapItr = shapeHandlerMap.begin();
+		shapeHandlerMapItr != shapeHandlerMap.end();
+		shapeHandlerMapItr++)
+	{
+		shapeHandlerMapItr->second->Flush();
+	}
 }
 
-void Renderer::DrawQuad(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[])
+void Renderer::Draw(ShapeHandlers handler, const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[])
 {
-	quadHandler->DrawQuad(positions, color, TexIndices);
-	
+	shapeHandlerMap[handler]->Draw(positions, color, TexIndices);
 }
 
-void Renderer::PlotPoints(const glm::vec3& positions, const glm::vec4& color, const glm::vec2 TexIndices[])
+const std::vector<Stats> Renderer::GetStats()
 {
-	pointHandler->PlotPoint(positions, color, TexIndices);
-}
+	std::vector<Stats> Statuses;
 
-void Renderer::DrawLine(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[])
-{
-	lineHandler->DrawLine(positions, color, TexIndices);
-}
+	for (shapeHandlerMapItr = shapeHandlerMap.begin();
+		shapeHandlerMapItr != shapeHandlerMap.end();
+		shapeHandlerMapItr++)
+	{
+		const Stats stats = shapeHandlerMapItr->second->GetStats();
+		Statuses.emplace_back(stats);
+	}
 
-
-const Stats& Renderer::GetStats()
-{
-	//return quadHandler->GetStats();
-	//return pointHandler->GetStats();
-	return lineHandler->GetStats();
+	return Statuses;
 }
 
 void Renderer::ResetStats()
 {
-	quadHandler->ResetStats();
-	pointHandler->ResetStats();
-	lineHandler->ResetStats();
+	for (shapeHandlerMapItr = shapeHandlerMap.begin();
+		shapeHandlerMapItr != shapeHandlerMap.end();
+		shapeHandlerMapItr++)
+	{
+		shapeHandlerMapItr->second->ResetStats();
+	}
 }

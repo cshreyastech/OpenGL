@@ -4,6 +4,16 @@
 #include <GLCore.h>
 #include <array>
 #include <glad\glad.h>
+#include "Handlers.h"
+
+//enum class ShapeHandlers
+//{
+//	None = 0,
+//	Quad, Point, Line
+//};
+
+//#define SHAPE_HANDLER_TYPE(type) static ShapeHandlers GetShapeHandlerType() { return ShapeHandlers::##type; }\
+//								virtual const char* GetName() const override { return #type; }
 
 struct Vertex
 {
@@ -15,6 +25,7 @@ struct Vertex
 
 struct Stats
 {
+	int ID;
 	uint32_t DrawCount = 0;
 	uint32_t QuadCount = 0;
 	uint32_t VertexCount = 0;
@@ -24,43 +35,48 @@ struct Stats
 class ShapeHandler
 {
 public:
-	ShapeHandler(const std::string quadHandler, const int* indexSequence, const GLenum type,
-		const uint32_t indexOffset, const uint32_t vertexOffset, const size_t maxQuadCount);
+	ShapeHandler(ShapeHandlers id, const int* indexSequence, const GLenum type,
+		const uint32_t indexOffset, const uint32_t vertexOffset, const size_t maxShapeCount);
 
-	ShapeHandler(const std::string quadHandler, const GLenum type, const uint32_t indexOffset,
-		const uint32_t vertexOffset, const size_t maxQuadCount);
-
+	ShapeHandler(ShapeHandlers id, const GLenum type, const uint32_t indexOffset,
+		const uint32_t vertexOffset, const size_t maxShapeCount);
 	virtual ~ShapeHandler() = default;
+
+	virtual void Draw(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]) = 0;
 	void DrawShape(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
-	void PlotPoint(const glm::vec3& positions, const glm::vec4& color, const glm::vec2 TexIndices[]);
+	void PlotPoint(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
+
 	void Shutdown();
 
+	const GLenum GetType() { return Type; }
 	void BeginBatch();
 	void EndBatch();
-	void FlushElements(GLenum type);
+	void FlushElements(GLenum type) ;
 	void FlushArray();
+	virtual void Flush() = 0;
 
 	const Stats& GetStats();
 	void ResetStats();
 
-protected:
+private:
+	ShapeHandlers ID;
 	GLuint quadVA = 0;
 	GLuint quadVB = 0;
 	GLuint quadIB = 0;
 
-	const uint32_t IndexOffset = 6;
-	const uint32_t VertexOffset = 4;
+	const uint32_t IndexOffset = 0;
+	const uint32_t VertexOffset = 0;
 
-	const size_t MaxQuadCount = 0;
+	const size_t MaxShapeCount = 0;
 	const size_t MaxVertexCount = 0;
 	const size_t MaxIndexCount = 0;
 	const GLenum Type;
 
 	const int* IndexSequence;
 	//Points beginning of the buffer. This is in CPU
-	Vertex* quadBuffer = nullptr;
+	Vertex* shapeBuffer = nullptr;
 	//Where we are up to
-	Vertex* quadBufferPtr = nullptr;
+	Vertex* shapeBufferPtr = nullptr;
 
 	//Use openGL code to Query the driver, find how many Texture slots the GPU have
 	static const size_t MaxTextures = 32;
@@ -74,7 +90,6 @@ protected:
 	uint32_t vertexCount = 0;
 
 	struct Stats RenderStats;
-
 private:
 	void CreateVA();
 	void CreateVB();

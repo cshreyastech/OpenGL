@@ -1,11 +1,10 @@
 #include "ShapeHandler.h"
 
-ShapeHandler::ShapeHandler(const std::string quadHandler, const int* indexSequence, 
-	const GLenum type, const uint32_t indexOffset, const uint32_t vertexOffset, 
-	const size_t maxQuadCount)
-	: MaxQuadCount(maxQuadCount), IndexSequence(indexSequence), 
-	Type(type), IndexOffset(indexOffset), VertexOffset(vertexOffset), 
-	MaxIndexCount(MaxQuadCount* IndexOffset), MaxVertexCount(maxQuadCount* VertexOffset)
+ShapeHandler::ShapeHandler(ShapeHandlers id, const int* indexSequence, const GLenum type,
+	const uint32_t indexOffset, const uint32_t vertexOffset, const size_t maxShapeCount)
+	: ID(id), IndexSequence(indexSequence), Type(type), IndexOffset(indexOffset), 
+	VertexOffset(vertexOffset), MaxShapeCount(maxShapeCount),
+	MaxIndexCount(MaxShapeCount* IndexOffset), MaxVertexCount(maxShapeCount* VertexOffset)
 {
 	CreateVA();
 	CreateVB();
@@ -14,20 +13,17 @@ ShapeHandler::ShapeHandler(const std::string quadHandler, const int* indexSequen
 	TextureSlotReset();
 }
 
-//PointHandler(const std::string quadShape, const GLenum type, const uint32_t indexOffset,
-//	const uint32_t vertexOffset, const size_t maxPointCount)
-ShapeHandler::ShapeHandler(const std::string quadHandler, const GLenum type, 
-	const uint32_t indexOffset, const uint32_t vertexOffset, const size_t maxPointCount)
-	: MaxQuadCount(maxPointCount), 
-	Type(type), IndexOffset(indexOffset), VertexOffset(vertexOffset),
-	MaxIndexCount(MaxQuadCount* IndexOffset), MaxVertexCount(maxPointCount* VertexOffset)
+ShapeHandler::ShapeHandler(ShapeHandlers id, const GLenum type, const uint32_t indexOffset,
+	const uint32_t vertexOffset, const size_t maxShapeCount)
+	: ID(id), Type(type), IndexOffset(indexOffset), 
+	VertexOffset(vertexOffset), MaxShapeCount(maxShapeCount),
+	MaxIndexCount(maxShapeCount* IndexOffset), MaxVertexCount(maxShapeCount* VertexOffset)
 {
 		CreateVA();
 		CreateVB();
 		EnableVA();
 		TextureSlotReset();
 }
-
 
 void ShapeHandler::DrawShape(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[])
 {
@@ -42,11 +38,11 @@ void ShapeHandler::DrawShape(const glm::vec3 positions[], const glm::vec4& color
 
 	for (int i = 0; i < VertexOffset; i++)
 	{
-		quadBufferPtr->Position = positions[i];
-		quadBufferPtr->Color = color;
-		quadBufferPtr->TexCoords = TexIndices[i];
-		quadBufferPtr->TexIndex = textureIndex;
-		quadBufferPtr++;
+		shapeBufferPtr->Position = positions[i];
+		shapeBufferPtr->Color = color;
+		shapeBufferPtr->TexCoords = TexIndices[i];
+		shapeBufferPtr->TexIndex = textureIndex;
+		shapeBufferPtr++;
 	}
 
 	indexCount += IndexOffset;
@@ -56,7 +52,7 @@ void ShapeHandler::DrawShape(const glm::vec3 positions[], const glm::vec4& color
 	RenderStats.IndexCount = RenderStats.QuadCount * IndexOffset;
 }
 
-void ShapeHandler::PlotPoint(const glm::vec3& positions, const glm::vec4& color, const glm::vec2 TexIndices[])
+void ShapeHandler::PlotPoint(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[])
 {
 	if (vertexCount >= MaxVertexCount)
 	{
@@ -67,19 +63,16 @@ void ShapeHandler::PlotPoint(const glm::vec3& positions, const glm::vec4& color,
 
 	float textureIndex = 0.0f;
 
-	quadBufferPtr->Position = positions;
-	quadBufferPtr->Color = color;
-	quadBufferPtr->TexCoords = TexIndices[0];
-	quadBufferPtr->TexIndex = textureIndex;
-	quadBufferPtr++;
+	shapeBufferPtr->Position = positions[0];
+	shapeBufferPtr->Color = color;
+	shapeBufferPtr->TexCoords = TexIndices[0];
+	shapeBufferPtr->TexIndex = textureIndex;
+	shapeBufferPtr++;
 
 	vertexCount++;
-
 	RenderStats.QuadCount++;
-
 	RenderStats.VertexCount = RenderStats.QuadCount;
 }
-
 
 void ShapeHandler::Shutdown()
 {
@@ -88,7 +81,7 @@ void ShapeHandler::Shutdown()
 	glDeleteBuffers(1, &quadIB);
 	glDeleteTextures(1, &WhiteTexture);
 
-	delete[] quadBuffer;
+	delete[] shapeBuffer;
 }
 
 void ShapeHandler::BeginBatch()
@@ -96,14 +89,14 @@ void ShapeHandler::BeginBatch()
 	// Resets point to the begining
 	// pointer keeps traks of where we copying the data to 
 	// in the cpu side vertex buffer
-	quadBufferPtr = quadBuffer;
+	shapeBufferPtr = shapeBuffer;
 }
 
 void ShapeHandler::EndBatch()
 {
-	GLsizeiptr size = (uint8_t*)quadBufferPtr - (uint8_t*)quadBuffer;
+	GLsizeiptr size = (uint8_t*)shapeBufferPtr - (uint8_t*)shapeBuffer;
 	glBindBuffer(GL_ARRAY_BUFFER, quadVB);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, size, quadBuffer);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, size, shapeBuffer);
 }
 
 void ShapeHandler::FlushElements(GLenum type)
@@ -129,7 +122,7 @@ void ShapeHandler::FlushArray()
 
 	glBindVertexArray(quadVA);
 
-	glPointSize(1);
+	glPointSize(3);
 	glDrawArrays(GL_POINTS, 0, vertexCount);
 
 	RenderStats.DrawCount++;
@@ -140,6 +133,7 @@ void ShapeHandler::FlushArray()
 
 const Stats& ShapeHandler::GetStats()
 {
+	RenderStats.ID = (int)ID;
 	return RenderStats;
 }
 
@@ -155,7 +149,7 @@ void ShapeHandler::CreateVA()
 
 void ShapeHandler::CreateVB()
 {
-	quadBuffer = new Vertex[MaxVertexCount];
+	shapeBuffer = new Vertex[MaxVertexCount];
 	glCreateBuffers(1, &quadVB);
 	glBindBuffer(GL_ARRAY_BUFFER, quadVB);
 	glBufferData(GL_ARRAY_BUFFER, MaxVertexCount * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);

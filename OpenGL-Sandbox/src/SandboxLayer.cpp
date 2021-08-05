@@ -6,7 +6,7 @@ using namespace GLCore;
 using namespace GLCore::Utils;
 
 
-const float quad_size = 1.0f;
+const float quad_size = 10.0f;
 
 const float rows = 10.0f;
 const float cols = 10.0f;
@@ -102,10 +102,9 @@ void SandboxLayer::OnUpdate(Timestep ts)
 		s_Instance->ResetStats();
 		s_Instance->BeginBatch();
 
-
 		GenerateQuads();
-		GeneratePoints();
 		GenerateLines();
+		GeneratePoints();
 		
 		s_Instance->EndBatch();
 		s_Instance->Flush();
@@ -115,12 +114,41 @@ void SandboxLayer::OnUpdate(Timestep ts)
 void SandboxLayer::OnImGuiRender()
 {
 	GLCORE_PROFILE_FUNCTION();
-
+	// - BeginColumns()
+// - NextColumn()
+// - EndColumns()
+// - Columns()
+	//const char* id = "a";
 	ImGui::Begin("Controls");
-	ImGui::Text("Quads: %d", s_Instance->GetStats().QuadCount);
-	ImGui::Text("DrawCount: %d", s_Instance->GetStats().DrawCount);
-	ImGui::Text("VertexCount: %d", s_Instance->GetStats().VertexCount);
-	ImGui::Text("IndexCount: %d", s_Instance->GetStats().IndexCount);
+	ImGui::Columns(5, "Dashboard", true);
+	ImGui::Text("Shape");
+	ImGui::NextColumn();
+	ImGui::Text("TotalCount");
+	ImGui::NextColumn();
+	ImGui::Text("DrawCount");
+	ImGui::NextColumn();
+	ImGui::Text("VertexCount");
+	ImGui::NextColumn();
+	ImGui::Text("IndexCount");
+	ImGui::NextColumn();
+	
+
+	std::vector<Stats> States = s_Instance->GetStats();
+
+	for (const Stats& stats : States)
+	{
+		ImGui::Text("%d", stats.ID);
+		ImGui::NextColumn();
+		ImGui::Text("%d", stats.QuadCount);
+		ImGui::NextColumn();
+		ImGui::Text("%d", stats.DrawCount);
+		ImGui::NextColumn();
+		ImGui::Text("%d", stats.VertexCount);
+		ImGui::NextColumn();
+		ImGui::Text("%d", stats.IndexCount);
+		ImGui::NextColumn();
+	}
+
 	ImGui::End();
 }
 
@@ -147,7 +175,7 @@ void SandboxLayer::GenerateQuads()
 				{			  x, y + quad_size, 0.0f }
 			};
 
-			s_Instance->DrawQuad(positions, color, TexIndices);
+			s_Instance->Draw(ShapeHandlers::Quad, positions, color, TexIndices);
 		}
 	}
 }
@@ -164,7 +192,11 @@ void SandboxLayer::GeneratePoints()
 	{
 		for (float x = -cols; x <= cols; x += quad_size)
 		{
-			s_Instance->PlotPoints(glm::vec3(x, y, 0.0f), color, TexIndicesPoints);
+			const glm::vec3 positions[] = {
+				{ x, y, 0.0f }
+			};
+
+			s_Instance->Draw(ShapeHandlers::Point, positions, color, TexIndicesPoints);
 		}
 	}
 }
@@ -191,7 +223,7 @@ void SandboxLayer::GenerateLines()
 				{ x + quad_size, y + midd_size, 0.0f }
 			};
 
-			s_Instance->DrawLine(positions, color, TexIndicesPoints);
+			s_Instance->Draw(ShapeHandlers::Line, positions, color, TexIndicesPoints);
 		}
 	}
 
