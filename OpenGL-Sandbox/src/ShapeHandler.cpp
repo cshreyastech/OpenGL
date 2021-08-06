@@ -1,6 +1,6 @@
 #include "ShapeHandler.h"
 
-ShapeHandler::ShapeHandler(ShapeHandlers id, const int* indexSequence, const GLenum type,
+ShapeHandler::ShapeHandler(Isolines::Lines id, const int* indexSequence, const GLenum type,
 	const uint32_t indexOffset, const uint32_t vertexOffset, const size_t maxShapeCount)
 	: ID(id), IndexSequence(indexSequence), Type(type), IndexOffset(indexOffset), 
 	VertexOffset(vertexOffset), MaxShapeCount(maxShapeCount),
@@ -13,7 +13,7 @@ ShapeHandler::ShapeHandler(ShapeHandlers id, const int* indexSequence, const GLe
 	TextureSlotReset();
 }
 
-ShapeHandler::ShapeHandler(ShapeHandlers id, const GLenum type, const uint32_t indexOffset,
+ShapeHandler::ShapeHandler(Isolines::Lines id, const GLenum type, const uint32_t indexOffset,
 	const uint32_t vertexOffset, const size_t maxShapeCount)
 	: ID(id), Type(type), IndexOffset(indexOffset), 
 	VertexOffset(vertexOffset), MaxShapeCount(maxShapeCount),

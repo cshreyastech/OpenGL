@@ -20,7 +20,7 @@ public:
 	void EndBatch();
 	void Flush();
 
-	void Draw(ShapeHandlers handler, const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
+	void Draw(Isolines::Lines handler, const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
 
 	const std::vector<Stats> GetStats();
 	void ResetStats();
@@ -31,7 +31,7 @@ private:
 	PointHandler* pointHandler;
 	LineHandler* lineHandler;
 
-	std::unordered_map<ShapeHandlers, ShapeHandler*> shapeHandlerMap;
-	std::unordered_map<ShapeHandlers, ShapeHandler*>::iterator shapeHandlerMapItr;
+	std::unordered_map<Isolines::Lines, ShapeHandler*> shapeHandlerMap;
+	std::unordered_map<Isolines::Lines, ShapeHandler*>::iterator shapeHandlerMapItr;
 };
 

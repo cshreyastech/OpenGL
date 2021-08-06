@@ -3,7 +3,7 @@
 #include <array>
 #include <glad\glad.h>
 
-LineHandler::LineHandler(ShapeHandlers id, const int* indexSequence, const GLenum type,
+LineHandler::LineHandler(Isolines::Lines id, const int* indexSequence, const GLenum type,
 	const uint32_t indexOffset, const uint32_t vertexOffset, const size_t maxLineCount)
 	:ShapeHandler(id, indexSequence, type, indexOffset, vertexOffset, maxLineCount)
 {

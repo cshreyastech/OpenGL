@@ -1,13 +1,10 @@
 #include "SandboxLayer.h"
 #include <stb_image/stb_image.h>
 
-
 using namespace GLCore;
 using namespace GLCore::Utils;
 
-
 const float quad_size = 10.0f;
-
 const float rows = 10.0f;
 const float cols = 10.0f;
 
@@ -102,7 +99,7 @@ void SandboxLayer::OnUpdate(Timestep ts)
 		s_Instance->ResetStats();
 		s_Instance->BeginBatch();
 
-		GenerateQuads();
+		//GenerateQuads();
 		GenerateLines();
 		GeneratePoints();
 		
@@ -114,11 +111,6 @@ void SandboxLayer::OnUpdate(Timestep ts)
 void SandboxLayer::OnImGuiRender()
 {
 	GLCORE_PROFILE_FUNCTION();
-	// - BeginColumns()
-// - NextColumn()
-// - EndColumns()
-// - Columns()
-	//const char* id = "a";
 	ImGui::Begin("Controls");
 	ImGui::Columns(5, "Dashboard", true);
 	ImGui::Text("Shape");
@@ -152,41 +144,39 @@ void SandboxLayer::OnImGuiRender()
 	ImGui::End();
 }
 
-void SandboxLayer::GenerateQuads()
-{
-	const glm::vec2 TexIndices[] = {
-	{ 0.0f, 0.0f },
-	{ 1.0f, 0.0f },
-	{ 1.0f, 1.0f },
-	{ 0.0f, 1.0f }
-	};
-
-	
-	for (float y = -rows; y < rows; y += quad_size)
-	{
-		for (float x = -cols; x < cols; x += quad_size)
-		{
-			glm::vec4 color = { (x + 10) / 20.0f, 0.2f, (y + 10) / 20.0f, 1.0f };
-
-			const glm::vec3 positions[] = {
-				{			  x,			 y, 0.0f },
-				{ x + quad_size,			 y, 0.0f },
-				{ x + quad_size, y + quad_size, 0.0f },
-				{			  x, y + quad_size, 0.0f }
-			};
-
-			s_Instance->Draw(ShapeHandlers::Quad, positions, color, TexIndices);
-		}
-	}
-}
+//void SandboxLayer::GenerateQuads()
+//{
+//	const glm::vec2 TexIndices[] = {
+//	{ 0.0f, 0.0f },
+//	{ 1.0f, 0.0f },
+//	{ 1.0f, 1.0f },
+//	{ 0.0f, 1.0f }
+//	};
+//
+//	
+//	for (float y = -rows; y < rows; y += quad_size)
+//	{
+//		for (float x = -cols; x < cols; x += quad_size)
+//		{
+//			glm::vec4 color = { (x + 10) / 20.0f, 0.2f, (y + 10) / 20.0f, 1.0f };
+//
+//			const glm::vec3 positions[] = {
+//				{			  x,			 y, 0.0f },
+//				{ x + quad_size,			 y, 0.0f },
+//				{ x + quad_size, y + quad_size, 0.0f },
+//				{			  x, y + quad_size, 0.0f }
+//			};
+//
+//			s_Instance->Draw(Isolines::Lines::Quad, positions, color, TexIndices);
+//		}
+//	}
+//}
 
 void SandboxLayer::GeneratePoints()
 {
 	const glm::vec2 TexIndicesPoints[] = {
 		{ 0.0f, 0.0f }
 	};
-
-	glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	for (float y = -rows; y <= rows; y += quad_size)
 	{
@@ -196,9 +186,17 @@ void SandboxLayer::GeneratePoints()
 				{ x, y, 0.0f }
 			};
 
-			s_Instance->Draw(ShapeHandlers::Point, positions, color, TexIndicesPoints);
+			//std::cout << (int)(abs((x + y) / quad_size)) % 2 << std::endl;
+
+			float col /*= rand() % 2*/;
+			col = 1.0f;
+			glm::vec4 color = { col, col, col, 1.0f };
+			
+			s_Instance->Draw(Isolines::Lines::Point, positions, color, TexIndicesPoints);
 		}
 	}
+
+
 }
 
 void SandboxLayer::GenerateLines()
@@ -208,22 +206,129 @@ void SandboxLayer::GenerateLines()
 			{ 0.0f, 1.0f }
 	};
 
+
+	const glm::vec2 TexIndicesPointsTen[] = {
+			{ 0.5f, 0.5f },
+			{ 0.0f, 0.5f },
+			{ 0.5f, 1.0f },
+			{ 1.0f, 0.5f }
+	};
+
 	glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	float midd_size = quad_size / 2.0f;
 	float row = rows - quad_size;
 	float col = cols - quad_size;
 
+	Isolines::Lines line;
+	line = Isolines::Lines::Ten;
+	glm::vec3 positions[2];
+	glm::vec3 positionsTen[4];
+
 	for (float y = -rows; y < rows; y += quad_size)
 	{
 		for (float x = -cols; x < cols; x += quad_size)
 		{
-			const glm::vec3 positions[] = {
-				{ x + midd_size, y + quad_size, 0.0f },
-				{ x + quad_size, y + midd_size, 0.0f }
-			};
+			/*
+					a
+				d		b
+				.	c
+			*/
+			const glm::vec3 a = { x + midd_size, y + quad_size, 0.0f };
+			const glm::vec3 b = { x + quad_size, y + midd_size, 0.0f };
+			const glm::vec3 c = { x + midd_size,			 y, 0.0f };
+			const glm::vec3 d = {			  x, y + midd_size, 0.0f };
 
-			s_Instance->Draw(ShapeHandlers::Line, positions, color, TexIndicesPoints);
+			
+			switch (line)
+			{
+				case Isolines::Lines::One:
+					positions[0] = c;
+					positions[1] = d;
+					break;
+
+				case Isolines::Lines::Two:
+					positions[0] = b;
+					positions[1] = c;
+					break;
+
+				case Isolines::Lines::Three:
+					positions[0] = d;
+					positions[1] = b;
+					break;
+
+				case Isolines::Lines::Four:
+					positions[0] = a;
+					positions[1] = b;
+					break;
+
+				case Isolines::Lines::Five:
+					positions[0] = d;
+					positions[1] = a;
+
+					s_Instance->Draw(line, positions, color, TexIndicesPoints);
+
+					positions[0] = b;
+					positions[1] = c;
+					break;
+
+				case Isolines::Lines::Six:
+					positions[0] = a;
+					positions[1] = c;
+					break;
+
+				case Isolines::Lines::Seven:
+					positions[0] = d;
+					positions[1] = a;
+					break;
+
+				case Isolines::Lines::Eight:
+					positions[0] = d;
+					positions[1] = a;
+					break;
+
+				case Isolines::Lines::Nine:
+					positions[0] = a;
+					positions[1] = c;
+					break;
+
+				case Isolines::Lines::Ten:
+					positionsTen[0] = c;
+					positionsTen[1] = d;
+					positionsTen[2] = a;
+					positionsTen[3] = b;
+
+					s_Instance->Draw(line, positionsTen, color, TexIndicesPointsTen);
+					continue;
+
+				case Isolines::Lines::Eleven:
+					positions[0] = a;
+					positions[1] = b;
+					break;
+
+				case Isolines::Lines::Tweleve:
+					positions[0] = d;
+					positions[1] = b;
+					break;
+
+				case Isolines::Lines::Thirteen:
+					positions[0] = b;
+					positions[1] = c;
+					break;
+
+				case Isolines::Lines::Fourteen:
+					positions[0] = c;
+					positions[1] = d;
+					break;
+
+				default:
+					break;
+			};
+			
+			/*if(line == Isolines::Lines::Ten)
+				s_Instance->Draw(line, positionsTen, color, TexIndicesPointsTen);
+			else*/
+				s_Instance->Draw(line, positions, color, TexIndicesPoints);
 		}
 	}
 

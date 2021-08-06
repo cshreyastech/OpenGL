@@ -6,15 +6,6 @@
 #include <glad\glad.h>
 #include "Handlers.h"
 
-//enum class ShapeHandlers
-//{
-//	None = 0,
-//	Quad, Point, Line
-//};
-
-//#define SHAPE_HANDLER_TYPE(type) static ShapeHandlers GetShapeHandlerType() { return ShapeHandlers::##type; }\
-//								virtual const char* GetName() const override { return #type; }
-
 struct Vertex
 {
 	glm::vec3 Position;
@@ -35,10 +26,10 @@ struct Stats
 class ShapeHandler
 {
 public:
-	ShapeHandler(ShapeHandlers id, const int* indexSequence, const GLenum type,
+	ShapeHandler(Isolines::Lines id, const int* indexSequence, const GLenum type,
 		const uint32_t indexOffset, const uint32_t vertexOffset, const size_t maxShapeCount);
 
-	ShapeHandler(ShapeHandlers id, const GLenum type, const uint32_t indexOffset,
+	ShapeHandler(Isolines::Lines id, const GLenum type, const uint32_t indexOffset,
 		const uint32_t vertexOffset, const size_t maxShapeCount);
 	virtual ~ShapeHandler() = default;
 
@@ -59,7 +50,7 @@ public:
 	void ResetStats();
 
 private:
-	ShapeHandlers ID;
+	Isolines::Lines ID;
 	GLuint quadVA = 0;
 	GLuint quadVB = 0;
 	GLuint quadIB = 0;

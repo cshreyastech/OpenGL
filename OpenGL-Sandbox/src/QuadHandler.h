@@ -4,7 +4,7 @@
 class QuadHandler : public ShapeHandler
 {
 public:
-	QuadHandler(ShapeHandlers id, const int* indexSequence, const GLenum type,
+	QuadHandler(Isolines::Lines id, const int* indexSequence, const GLenum type,
 		const uint32_t indexOffset, const uint32_t vertexOffset, const size_t maxQuadCount);
 	virtual ~QuadHandler();
 	

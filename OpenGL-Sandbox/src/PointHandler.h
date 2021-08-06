@@ -4,7 +4,7 @@
 class PointHandler : public ShapeHandler
 {
 public:
-	PointHandler(ShapeHandlers id, const GLenum type, const uint32_t indexOffset,
+	PointHandler(Isolines::Lines id, const GLenum type, const uint32_t indexOffset,
 		const uint32_t vertexOffset, const size_t maxQuadCount);
 	virtual ~PointHandler();
 

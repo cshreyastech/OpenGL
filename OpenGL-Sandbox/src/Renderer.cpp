@@ -25,19 +25,24 @@ Renderer::~Renderer()
 
 void Renderer::Init()
 {
-	shapeHandlerMap[ShapeHandlers::Quad] =
+	const int batchSize = 1;
+	shapeHandlerMap[Isolines::Lines::Point] =
+		new PointHandler(Isolines::Lines::Point, GL_POINTS, 1, 1, batchSize);
+
+	/*shapeHandlerMap[ShapeHandlers::Quad] =
 		new QuadHandler(ShapeHandlers::Quad,
-			new int[6]{ 0, 1, 2, 2, 3, 0 }, GL_TRIANGLES, 6, 4, 2);
+			new int[6]{ 0, 1, 2, 2, 3, 0 }, GL_TRIANGLES, 6, 4, 1000);*/
 
-	shapeHandlerMap[ShapeHandlers::Line] =
-		new LineHandler(ShapeHandlers::Line,
-			new int[2]{ 0, 1 }, GL_LINES, 2, 2, 2);
+	for (const Isolines::Lines line : Isolines::allLines)
+	{
+		if (line == Isolines::Lines::Ten) continue;
 
-	shapeHandlerMap[ShapeHandlers::Point] =
-		new PointHandler(ShapeHandlers::Point, GL_POINTS, 1, 1, 3);
+		shapeHandlerMap[line] =
+			new LineHandler(line, new int[2]{ 0, 1 }, GL_LINES, 2, 2, batchSize);
+	}
 
-
-
+	shapeHandlerMap[Isolines::Lines::Ten] =
+		new LineHandler(Isolines::Lines::Ten, new int[6]{ 0, 1, 1, 2, 2, 3 }, GL_LINES, 6, 4, batchSize);
 }
 
 void Renderer::Shutdown()
@@ -81,7 +86,7 @@ void Renderer::Flush()
 	}
 }
 
-void Renderer::Draw(ShapeHandlers handler, const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[])
+void Renderer::Draw(Isolines::Lines handler, const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[])
 {
 	shapeHandlerMap[handler]->Draw(positions, color, TexIndices);
 }
