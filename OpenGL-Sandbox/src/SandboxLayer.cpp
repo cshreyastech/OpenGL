@@ -4,11 +4,7 @@
 using namespace GLCore;
 using namespace GLCore::Utils;
 
-const float quad_size = 0.25f;
-const float rows = 10.0f;
-const float cols = 10.0f;
-const int nRows = 2 * rows / quad_size + 1;
-const int nCols = 2 * cols / quad_size + 1;
+
 
 SandboxLayer::SandboxLayer()
 	: Layer("Sandbox"), m_CameraController(16.0f / 9.0f)
@@ -104,8 +100,6 @@ void SandboxLayer::OnUpdate(Timestep ts)
 		s_Instance->BeginBatch();
 		RenderContour();
 		//GenerateQuads();
-		//GenerateLines();
-		//GeneratePoints();
 		
 
 		s_Instance->EndBatch();
@@ -163,31 +157,8 @@ void SandboxLayer::GenerateContour()
 		for (int col = 0; col < nCols; col++)
 		{
 			contour[row][col] = rand() % 2;
-			//std::cout << "( " << row << ", " << col << " ) : " << contour[row][col] << ", ";
 		}
-
-		//std::cout << std::endl;
 	}
-
-	//std::cout << "-----------------" << std::endl;
-
-	//int row = 0, col = 0;
-	//for (float y = -rows; y <= rows; y += quad_size)
-	//{
-	//	col = 0;
-	//	for (float x = -cols; x <= cols; x += quad_size)
-	//	{
-	//		std::cout << "( " << row << ", " << col << " ) : " << contour[row][col] << ", ";
-	//		//std::cout << contour[row][col] << ", ";
-	//		//GeneratePoints(x, y, decimalCode);
-	//		//GenerateLines(x, y, Isolines::Lines::Ten);
-
-	//		col++;
-	//	}
-	//	row++;
-
-	//	std::cout << std::endl;
-	//}
 }
 
 void SandboxLayer::RenderContour()
@@ -198,16 +169,11 @@ void SandboxLayer::RenderContour()
 		col = 0;
 		for (float x = -cols; x <= cols; x += quad_size)
 		{
-			//std::cout << "( " << row << ", " << col << " ) : " << contour[row][col] << ", ";
-			//std::cout << contour[row][col] << ", ";
 			GeneratePoints(x, y, contour[row][col]);
-			//GenerateLines(x, y, Isolines::Lines::Ten);
-
+			
 			col++;
 		}
 		row++;
-
-		//std::cout << std::endl;
 	}
 
 	float x = -rows, y = -cols;
@@ -216,45 +182,14 @@ void SandboxLayer::RenderContour()
 		x = -cols;
 		for (int col = 0; col < nCols - 1; col++)
 		{
-			//std::cout << "( " << x << ", " << y << " ) : " << contour[row][col] << ", ";
 			int isoLine = GetState(contour[row + 1][col], contour[row + 1][col + 1],
 							contour[row][col + 1], contour[row][col]);
 			GenerateLines(x, y, Isolines::LineByIndex(isoLine));
 			x += quad_size;
 		}
-		//std::cout << std::endl;
 
 		y += quad_size;
 	}
-	//std::cout << "contour: " << contour[100][100] << std::endl;
-	//row = 0, col = 0;
-	//for (float y = -rows; y < rows; y += quad_size)
-	//{
-	//	col = 0;
-	//	for (float x = -cols; x < cols; x += quad_size)
-	//	{
-	//		//std::cout << "( " << row << ", " << col << " ) : " << contour[row][col] << ", ";
-	//		//std::cout << contour[row][col] << ", ";
-	//		//GeneratePoints(x, y, contour[row][col]);
-	//		//GenerateLines(x, y, Isolines::Lines::Ten);
-	//		
-	//		// Check sequence
-	//		int isoLine = GetState(contour[row + 1][col], contour[row + 1][col + 1],
-	//			contour[row][col + 1], contour[row][col]);
-
-	//		/*std::cout << "isoLine: " << isoLine << ", Enum: " 
-	//			<< (int)(Isolines::LineByIndex(isoLine)) << std::endl;*/
-
-	//		//GenerateLines(x, y, Isolines::LineByIndex(isoLine));
-	//		
-
-	//		col++;
-	//	}
-	//	row++;
-
-
-	//	//std::cout << std::endl;
-	//}
 
 }
 
