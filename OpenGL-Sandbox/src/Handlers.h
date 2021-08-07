@@ -10,7 +10,7 @@ namespace Isolines {
 
 	enum class Lines
 	{
-		None = 0,
+		Zero = 0,
 		One, Two, Three, Four, Five, 
 		Six, Seven, Eight, Nine, Ten, 
 		Eleven, Tweleve, Thirteen, Fourteen, Fifteen,
@@ -23,4 +23,6 @@ namespace Isolines {
 		Lines::Eleven, Lines::Tweleve, Lines::Thirteen, Lines::Fourteen, 
 		Lines::Fifteen
 	};
+
+	static const Lines LineByIndex(int i) { return static_cast<Lines>(i); };
 }

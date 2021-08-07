@@ -19,9 +19,13 @@ public:
 	virtual void OnUpdate(GLCore::Timestep ts) override;
 	virtual void OnImGuiRender() override;
 private:
-	void GenerateQuads();
-	void GeneratePoints();
-	void GenerateLines();
+	void GenerateContour();
+	void RenderContour();
+	int GetState(int a, int b, int c, int d);
+	//void GenerateQuads();
+	//void GeneratePoints();
+	void SandboxLayer::GeneratePoints(float x, float y, float decimalCode) const;
+	void GenerateLines(float x, float y, Isolines::Lines line) const;
 
 private:
 	std::unique_ptr<GLCore::Utils::Shader> m_Shader;
@@ -29,4 +33,5 @@ private:
 
 	glm::vec4 m_SquareColor = { 0.8f, 0.2f, 0.3f, 1.0f };
 	Renderer* s_Instance = nullptr;
+	float** contour;
 };

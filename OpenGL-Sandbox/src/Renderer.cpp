@@ -25,7 +25,7 @@ Renderer::~Renderer()
 
 void Renderer::Init()
 {
-	const int batchSize = 1;
+	const int batchSize = 10000;
 	shapeHandlerMap[Isolines::Lines::Point] =
 		new PointHandler(Isolines::Lines::Point, GL_POINTS, 1, 1, batchSize);
 

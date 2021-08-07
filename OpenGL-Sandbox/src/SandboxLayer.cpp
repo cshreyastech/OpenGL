@@ -4,9 +4,11 @@
 using namespace GLCore;
 using namespace GLCore::Utils;
 
-const float quad_size = 10.0f;
+const float quad_size = 0.25f;
 const float rows = 10.0f;
 const float cols = 10.0f;
+const int nRows = 2 * rows / quad_size + 1;
+const int nCols = 2 * cols / quad_size + 1;
 
 SandboxLayer::SandboxLayer()
 	: Layer("Sandbox"), m_CameraController(16.0f / 9.0f)
@@ -49,11 +51,14 @@ void SandboxLayer::OnAttach()
 
 	s_Instance = new Renderer();
 	s_Instance->Init();
+
+	GenerateContour();
 }
 
 void SandboxLayer::OnDetach()
 {
 	s_Instance->Shutdown();
+	delete[] contour;
 }
 
 void SandboxLayer::OnEvent(Event& event)
@@ -82,7 +87,6 @@ void SandboxLayer::OnUpdate(Timestep ts)
 		m_CameraController.OnUpdate(ts);
 	}
 
-	
 	glClear(GL_COLOR_BUFFER_BIT);
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glUseProgram(m_Shader->GetRendererID());
@@ -98,11 +102,12 @@ void SandboxLayer::OnUpdate(Timestep ts)
 		GLCORE_PROFILE_SCOPE("Renderer Draw");
 		s_Instance->ResetStats();
 		s_Instance->BeginBatch();
-
+		RenderContour();
 		//GenerateQuads();
-		GenerateLines();
-		GeneratePoints();
+		//GenerateLines();
+		//GeneratePoints();
 		
+
 		s_Instance->EndBatch();
 		s_Instance->Flush();
 	}
@@ -144,6 +149,120 @@ void SandboxLayer::OnImGuiRender()
 	ImGui::End();
 }
 
+void SandboxLayer::GenerateContour()
+{
+
+	std::cout << "nRows: " << nRows << ", nCols: " << nCols << std::endl;
+	contour = new float* [nRows];
+
+	for (int i = 0; i < nRows; i++)
+		contour[i] = new float[nCols];
+
+	for (int row = 0; row < nRows; row++)
+	{
+		for (int col = 0; col < nCols; col++)
+		{
+			contour[row][col] = rand() % 2;
+			//std::cout << "( " << row << ", " << col << " ) : " << contour[row][col] << ", ";
+		}
+
+		//std::cout << std::endl;
+	}
+
+	//std::cout << "-----------------" << std::endl;
+
+	//int row = 0, col = 0;
+	//for (float y = -rows; y <= rows; y += quad_size)
+	//{
+	//	col = 0;
+	//	for (float x = -cols; x <= cols; x += quad_size)
+	//	{
+	//		std::cout << "( " << row << ", " << col << " ) : " << contour[row][col] << ", ";
+	//		//std::cout << contour[row][col] << ", ";
+	//		//GeneratePoints(x, y, decimalCode);
+	//		//GenerateLines(x, y, Isolines::Lines::Ten);
+
+	//		col++;
+	//	}
+	//	row++;
+
+	//	std::cout << std::endl;
+	//}
+}
+
+void SandboxLayer::RenderContour()
+{
+	int row = 0, col = 0;
+	for (float y = -rows; y <= rows; y += quad_size)
+	{
+		col = 0;
+		for (float x = -cols; x <= cols; x += quad_size)
+		{
+			//std::cout << "( " << row << ", " << col << " ) : " << contour[row][col] << ", ";
+			//std::cout << contour[row][col] << ", ";
+			GeneratePoints(x, y, contour[row][col]);
+			//GenerateLines(x, y, Isolines::Lines::Ten);
+
+			col++;
+		}
+		row++;
+
+		//std::cout << std::endl;
+	}
+
+	float x = -rows, y = -cols;
+	for (int row = 0; row < nRows - 1; row++)
+	{
+		x = -cols;
+		for (int col = 0; col < nCols - 1; col++)
+		{
+			//std::cout << "( " << x << ", " << y << " ) : " << contour[row][col] << ", ";
+			int isoLine = GetState(contour[row + 1][col], contour[row + 1][col + 1],
+							contour[row][col + 1], contour[row][col]);
+			GenerateLines(x, y, Isolines::LineByIndex(isoLine));
+			x += quad_size;
+		}
+		//std::cout << std::endl;
+
+		y += quad_size;
+	}
+	//std::cout << "contour: " << contour[100][100] << std::endl;
+	//row = 0, col = 0;
+	//for (float y = -rows; y < rows; y += quad_size)
+	//{
+	//	col = 0;
+	//	for (float x = -cols; x < cols; x += quad_size)
+	//	{
+	//		//std::cout << "( " << row << ", " << col << " ) : " << contour[row][col] << ", ";
+	//		//std::cout << contour[row][col] << ", ";
+	//		//GeneratePoints(x, y, contour[row][col]);
+	//		//GenerateLines(x, y, Isolines::Lines::Ten);
+	//		
+	//		// Check sequence
+	//		int isoLine = GetState(contour[row + 1][col], contour[row + 1][col + 1],
+	//			contour[row][col + 1], contour[row][col]);
+
+	//		/*std::cout << "isoLine: " << isoLine << ", Enum: " 
+	//			<< (int)(Isolines::LineByIndex(isoLine)) << std::endl;*/
+
+	//		//GenerateLines(x, y, Isolines::LineByIndex(isoLine));
+	//		
+
+	//		col++;
+	//	}
+	//	row++;
+
+
+	//	//std::cout << std::endl;
+	//}
+
+}
+
+int SandboxLayer::GetState(int a, int b, int c, int d)
+{
+	return a * 8 + b * 4 + c * 2 + d * 1;
+}
+
 //void SandboxLayer::GenerateQuads()
 //{
 //	const glm::vec2 TexIndices[] = {
@@ -172,40 +291,26 @@ void SandboxLayer::OnImGuiRender()
 //	}
 //}
 
-void SandboxLayer::GeneratePoints()
+void SandboxLayer::GeneratePoints(float x, float y, float decimalCode) const
 {
 	const glm::vec2 TexIndicesPoints[] = {
 		{ 0.0f, 0.0f }
 	};
 
-	for (float y = -rows; y <= rows; y += quad_size)
-	{
-		for (float x = -cols; x <= cols; x += quad_size)
-		{
-			const glm::vec3 positions[] = {
-				{ x, y, 0.0f }
-			};
+	const glm::vec3 positions[] = {
+					{ x, y, 0.0f }
+	};
 
-			//std::cout << (int)(abs((x + y) / quad_size)) % 2 << std::endl;
-
-			float col /*= rand() % 2*/;
-			col = 1.0f;
-			glm::vec4 color = { col, col, col, 1.0f };
-			
-			s_Instance->Draw(Isolines::Lines::Point, positions, color, TexIndicesPoints);
-		}
-	}
-
-
+	glm::vec4 color = { decimalCode, decimalCode, decimalCode, 1.0f };
+	s_Instance->Draw(Isolines::Lines::Point, positions, color, TexIndicesPoints);
 }
 
-void SandboxLayer::GenerateLines()
+void SandboxLayer::GenerateLines(float x, float y, Isolines::Lines line) const
 {
 	const glm::vec2 TexIndicesPoints[] = {
 			{ 0.0f, 0.0f },
 			{ 0.0f, 1.0f }
 	};
-
 
 	const glm::vec2 TexIndicesPointsTen[] = {
 			{ 0.5f, 0.5f },
@@ -220,116 +325,108 @@ void SandboxLayer::GenerateLines()
 	float row = rows - quad_size;
 	float col = cols - quad_size;
 
-	Isolines::Lines line;
-	line = Isolines::Lines::Ten;
 	glm::vec3 positions[2];
 	glm::vec3 positionsTen[4];
 
-	for (float y = -rows; y < rows; y += quad_size)
-	{
-		for (float x = -cols; x < cols; x += quad_size)
+		/*
+				a
+			d		b
+			.	c
+		*/
+		const glm::vec3 a = { x + midd_size, y + quad_size, 0.0f };
+		const glm::vec3 b = { x + quad_size, y + midd_size, 0.0f };
+		const glm::vec3 c = { x + midd_size,			 y, 0.0f };
+		const glm::vec3 d = {			  x, y + midd_size, 0.0f };
+
+			
+		switch (line)
 		{
-			/*
-					a
-				d		b
-				.	c
-			*/
-			const glm::vec3 a = { x + midd_size, y + quad_size, 0.0f };
-			const glm::vec3 b = { x + quad_size, y + midd_size, 0.0f };
-			const glm::vec3 c = { x + midd_size,			 y, 0.0f };
-			const glm::vec3 d = {			  x, y + midd_size, 0.0f };
+			case Isolines::Lines::One:
+				positions[0] = c;
+				positions[1] = d;
+				break;
 
-			
-			switch (line)
-			{
-				case Isolines::Lines::One:
-					positions[0] = c;
-					positions[1] = d;
-					break;
+			case Isolines::Lines::Two:
+				positions[0] = b;
+				positions[1] = c;
+				break;
 
-				case Isolines::Lines::Two:
-					positions[0] = b;
-					positions[1] = c;
-					break;
+			case Isolines::Lines::Three:
+				positions[0] = d;
+				positions[1] = b;
+				break;
 
-				case Isolines::Lines::Three:
-					positions[0] = d;
-					positions[1] = b;
-					break;
+			case Isolines::Lines::Four:
+				positions[0] = a;
+				positions[1] = b;
+				break;
 
-				case Isolines::Lines::Four:
-					positions[0] = a;
-					positions[1] = b;
-					break;
+			case Isolines::Lines::Five:
+				positions[0] = d;
+				positions[1] = a;
 
-				case Isolines::Lines::Five:
-					positions[0] = d;
-					positions[1] = a;
-
-					s_Instance->Draw(line, positions, color, TexIndicesPoints);
-
-					positions[0] = b;
-					positions[1] = c;
-					break;
-
-				case Isolines::Lines::Six:
-					positions[0] = a;
-					positions[1] = c;
-					break;
-
-				case Isolines::Lines::Seven:
-					positions[0] = d;
-					positions[1] = a;
-					break;
-
-				case Isolines::Lines::Eight:
-					positions[0] = d;
-					positions[1] = a;
-					break;
-
-				case Isolines::Lines::Nine:
-					positions[0] = a;
-					positions[1] = c;
-					break;
-
-				case Isolines::Lines::Ten:
-					positionsTen[0] = c;
-					positionsTen[1] = d;
-					positionsTen[2] = a;
-					positionsTen[3] = b;
-
-					s_Instance->Draw(line, positionsTen, color, TexIndicesPointsTen);
-					continue;
-
-				case Isolines::Lines::Eleven:
-					positions[0] = a;
-					positions[1] = b;
-					break;
-
-				case Isolines::Lines::Tweleve:
-					positions[0] = d;
-					positions[1] = b;
-					break;
-
-				case Isolines::Lines::Thirteen:
-					positions[0] = b;
-					positions[1] = c;
-					break;
-
-				case Isolines::Lines::Fourteen:
-					positions[0] = c;
-					positions[1] = d;
-					break;
-
-				default:
-					break;
-			};
-			
-			/*if(line == Isolines::Lines::Ten)
-				s_Instance->Draw(line, positionsTen, color, TexIndicesPointsTen);
-			else*/
 				s_Instance->Draw(line, positions, color, TexIndicesPoints);
-		}
-	}
 
+				positions[0] = b;
+				positions[1] = c;
+				break;
+
+			case Isolines::Lines::Six:
+				positions[0] = a;
+				positions[1] = c;
+				break;
+
+			case Isolines::Lines::Seven:
+				positions[0] = d;
+				positions[1] = a;
+				break;
+
+			case Isolines::Lines::Eight:
+				positions[0] = d;
+				positions[1] = a;
+				break;
+
+			case Isolines::Lines::Nine:
+				positions[0] = a;
+				positions[1] = c;
+				break;
+
+			case Isolines::Lines::Ten:
+				positionsTen[0] = c;
+				positionsTen[1] = d;
+				positionsTen[2] = a;
+				positionsTen[3] = b;
+
+				break;
+
+			case Isolines::Lines::Eleven:
+				positions[0] = a;
+				positions[1] = b;
+				break;
+
+			case Isolines::Lines::Tweleve:
+				positions[0] = d;
+				positions[1] = b;
+				break;
+
+			case Isolines::Lines::Thirteen:
+				positions[0] = b;
+				positions[1] = c;
+				break;
+
+			case Isolines::Lines::Fourteen:
+				positions[0] = c;
+				positions[1] = d;
+				break;
+
+			default:
+				break;
+		};
+			
+		if (line == Isolines::Lines::Zero || line == Isolines::Lines::Fifteen)
+			return;
+		if(line == Isolines::Lines::Ten)
+			s_Instance->Draw(line, positionsTen, color, TexIndicesPointsTen);
+		else
+			s_Instance->Draw(line, positions, color, TexIndicesPoints);
 }
