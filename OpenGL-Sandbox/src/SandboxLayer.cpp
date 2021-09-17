@@ -98,6 +98,8 @@ void SandboxLayer::OnUpdate(Timestep ts)
 		GLCORE_PROFILE_SCOPE("Renderer Draw");
 		s_Instance->ResetStats();
 		s_Instance->BeginBatch();
+
+		//GenerateContour();
 		RenderContour();
 		//GenerateQuads();
 		
@@ -110,6 +112,9 @@ void SandboxLayer::OnUpdate(Timestep ts)
 void SandboxLayer::OnImGuiRender()
 {
 	GLCORE_PROFILE_FUNCTION();
+
+	//ImGui::SliderFloat("Quad Size", &quad_size, 0.2, 20.0, "%0.3f");
+
 	ImGui::Begin("Controls");
 	ImGui::Columns(5, "Dashboard", true);
 	ImGui::Text("Shape");
@@ -191,6 +196,7 @@ void SandboxLayer::RenderContour()
 		y += quad_size;
 	}
 
+	//delete[] contour;
 }
 
 int SandboxLayer::GetState(int a, int b, int c, int d)
@@ -327,10 +333,13 @@ void SandboxLayer::GenerateLines(float x, float y, Isolines::Lines line) const
 				break;
 
 			case Isolines::Lines::Ten:
-				positionsTen[0] = c;
-				positionsTen[1] = d;
-				positionsTen[2] = a;
-				positionsTen[3] = b;
+				positions[0] = a;
+				positions[1] = b;
+
+				s_Instance->Draw(line, positions, color, TexIndicesPoints);
+
+				positions[0] = c;
+				positions[1] = d;
 
 				break;
 
@@ -360,8 +369,6 @@ void SandboxLayer::GenerateLines(float x, float y, Isolines::Lines line) const
 			
 		if (line == Isolines::Lines::Zero || line == Isolines::Lines::Fifteen)
 			return;
-		if(line == Isolines::Lines::Ten)
-			s_Instance->Draw(line, positionsTen, color, TexIndicesPointsTen);
-		else
-			s_Instance->Draw(line, positions, color, TexIndicesPoints);
+
+		s_Instance->Draw(line, positions, color, TexIndicesPoints);
 }

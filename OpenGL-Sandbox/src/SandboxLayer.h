@@ -28,11 +28,11 @@ private:
 	void GenerateLines(float x, float y, Isolines::Lines line) const;
 
 private:
-	const float quad_size = 0.25f;
+	float quad_size = 0.25f;
 	const float rows = 10.0f;
 	const float cols = 10.0f;
-	const int nRows = 2 * rows / quad_size + 1;
-	const int nCols = 2 * cols / quad_size + 1;
+	int nRows = 2 * rows / quad_size + 1;
+	int nCols = 2 * cols / quad_size + 1;
 
 	std::unique_ptr<GLCore::Utils::Shader> m_Shader;
 	GLCore::Utils::OrthographicCameraController m_CameraController;

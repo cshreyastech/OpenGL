@@ -25,7 +25,7 @@ Renderer::~Renderer()
 
 void Renderer::Init()
 {
-	const int batchSize = 10000;
+	const int batchSize = 100;
 	shapeHandlerMap[Isolines::Lines::Point] =
 		new PointHandler(Isolines::Lines::Point, GL_POINTS, 1, 1, batchSize);
 
@@ -34,15 +34,8 @@ void Renderer::Init()
 			new int[6]{ 0, 1, 2, 2, 3, 0 }, GL_TRIANGLES, 6, 4, 1000);*/
 
 	for (const Isolines::Lines line : Isolines::allLines)
-	{
-		if (line == Isolines::Lines::Ten) continue;
-
 		shapeHandlerMap[line] =
 			new LineHandler(line, new int[2]{ 0, 1 }, GL_LINES, 2, 2, batchSize);
-	}
-
-	shapeHandlerMap[Isolines::Lines::Ten] =
-		new LineHandler(Isolines::Lines::Ten, new int[6]{ 0, 1, 1, 2, 2, 3 }, GL_LINES, 6, 4, batchSize);
 }
 
 void Renderer::Shutdown()
