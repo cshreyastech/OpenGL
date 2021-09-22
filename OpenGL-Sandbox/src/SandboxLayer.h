@@ -22,10 +22,9 @@ private:
 	void GenerateContour();
 	void RenderContour();
 	int GetState(int a, int b, int c, int d);
-	//void GenerateQuads();
-	//void GeneratePoints();
 	void SandboxLayer::GeneratePoints(float x, float y, float decimalCode) const;
 	void GenerateLines(float x, float y, Isolines::Lines line) const;
+	void GenerateTriangles(float x, float y, Isolines::Lines line) const;
 
 private:
 	float quad_size = 0.25f;

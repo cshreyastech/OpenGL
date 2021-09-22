@@ -1,7 +1,7 @@
 #include "QuadHandler.h"
 #include <GLCore.h>
 #include <array>
-#include <glad\glad.h>
+
 
 QuadHandler::QuadHandler(Isolines::Lines id, const int* indexSequence,
 	const GLenum type, const uint32_t indexOffset, const uint32_t vertexOffset, 

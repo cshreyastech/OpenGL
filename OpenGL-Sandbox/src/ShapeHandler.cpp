@@ -1,10 +1,11 @@
 #include "ShapeHandler.h"
 
-ShapeHandler::ShapeHandler(Isolines::Lines id, const int* indexSequence, const GLenum type,
+ShapeHandler::ShapeHandler(Isolines::Lines id, std::vector<int>& indexSequence, const GLenum type,
 	const uint32_t indexOffset, const uint32_t vertexOffset, const size_t maxShapeCount)
 	: ID(id), IndexSequence(indexSequence), Type(type), IndexOffset(indexOffset), 
 	VertexOffset(vertexOffset), MaxShapeCount(maxShapeCount),
-	MaxIndexCount(MaxShapeCount* IndexOffset), MaxVertexCount(maxShapeCount* VertexOffset)
+	MaxIndexCount(MaxShapeCount* IndexOffset), 
+	MaxVertexCount(maxShapeCount* VertexOffset)
 {
 	CreateVA();
 	CreateVB();
@@ -13,19 +14,21 @@ ShapeHandler::ShapeHandler(Isolines::Lines id, const int* indexSequence, const G
 	TextureSlotReset();
 }
 
-ShapeHandler::ShapeHandler(Isolines::Lines id, const GLenum type, const uint32_t indexOffset,
-	const uint32_t vertexOffset, const size_t maxShapeCount)
-	: ID(id), Type(type), IndexOffset(indexOffset), 
-	VertexOffset(vertexOffset), MaxShapeCount(maxShapeCount),
-	MaxIndexCount(maxShapeCount* IndexOffset), MaxVertexCount(maxShapeCount* VertexOffset)
+ShapeHandler::ShapeHandler(Isolines::Lines id, const GLenum type, 
+	const uint32_t indexOffset, const uint32_t vertexOffset, const size_t maxShapeCount)
+	: ID(id), IndexSequence(*new std::vector<int>), Type(type), 
+	IndexOffset(indexOffset), VertexOffset(vertexOffset), 
+	MaxShapeCount(maxShapeCount), MaxIndexCount(maxShapeCount * IndexOffset), 
+	MaxVertexCount(maxShapeCount * VertexOffset)
 {
+
 		CreateVA();
 		CreateVB();
 		EnableVA();
 		TextureSlotReset();
 }
 
-void ShapeHandler::DrawShape(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[])
+void ShapeHandler::DrawShape(const std::vector<glm::vec3> positions, const glm::vec4& color, const std::vector<glm::vec2> TexIndices)
 {
 	if (indexCount >= MaxIndexCount)
 	{
@@ -38,9 +41,9 @@ void ShapeHandler::DrawShape(const glm::vec3 positions[], const glm::vec4& color
 
 	for (int i = 0; i < VertexOffset; i++)
 	{
-		shapeBufferPtr->Position = positions[i];
+		shapeBufferPtr->Position = positions.at(i);
 		shapeBufferPtr->Color = color;
-		shapeBufferPtr->TexCoords = TexIndices[i];
+		shapeBufferPtr->TexCoords = TexIndices.at(i);
 		shapeBufferPtr->TexIndex = textureIndex;
 		shapeBufferPtr++;
 	}
@@ -52,7 +55,7 @@ void ShapeHandler::DrawShape(const glm::vec3 positions[], const glm::vec4& color
 	RenderStats.IndexCount = RenderStats.QuadCount * IndexOffset;
 }
 
-void ShapeHandler::PlotPoint(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[])
+void ShapeHandler::PlotPoint(const std::vector<glm::vec3> positions, const glm::vec4& color, const std::vector<glm::vec2> TexIndices)
 {
 	if (vertexCount >= MaxVertexCount)
 	{
@@ -63,9 +66,9 @@ void ShapeHandler::PlotPoint(const glm::vec3 positions[], const glm::vec4& color
 
 	float textureIndex = 0.0f;
 
-	shapeBufferPtr->Position = positions[0];
+	shapeBufferPtr->Position = positions.at(0);
 	shapeBufferPtr->Color = color;
-	shapeBufferPtr->TexCoords = TexIndices[0];
+	shapeBufferPtr->TexCoords = TexIndices.at(0);
 	shapeBufferPtr->TexIndex = textureIndex;
 	shapeBufferPtr++;
 

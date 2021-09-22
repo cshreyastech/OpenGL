@@ -1,7 +1,5 @@
 #include "PointHandler.h"
-#include <GLCore.h>
-#include <array>
-#include <glad\glad.h>
+
 
 
 PointHandler::PointHandler(Isolines::Lines id, const GLenum type, const uint32_t indexOffset,
@@ -19,7 +17,7 @@ void PointHandler::Flush()
 	ShapeHandler::FlushArray();
 }
 
-void PointHandler::Draw(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[])
+void PointHandler::Draw(const std::vector<glm::vec3> positions, const glm::vec4& color, const std::vector<glm::vec2> TexIndices)
 {
 	ShapeHandler::PlotPoint(positions, color, TexIndices);
 }

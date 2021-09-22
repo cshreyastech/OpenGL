@@ -102,7 +102,7 @@ void SandboxLayer::OnUpdate(Timestep ts)
 		//GenerateContour();
 		RenderContour();
 		//GenerateQuads();
-		
+		//GenerateTriangles();
 
 		s_Instance->EndBatch();
 		s_Instance->Flush();
@@ -175,7 +175,6 @@ void SandboxLayer::RenderContour()
 		for (float x = -cols; x <= cols; x += quad_size)
 		{
 			GeneratePoints(x, y, contour[row][col]);
-			
 			col++;
 		}
 		row++;
@@ -189,7 +188,8 @@ void SandboxLayer::RenderContour()
 		{
 			int isoLine = GetState(contour[row + 1][col], contour[row + 1][col + 1],
 							contour[row][col + 1], contour[row][col]);
-			GenerateLines(x, y, Isolines::LineByIndex(isoLine));
+			//GenerateLines(x, y, Isolines::LineByIndex(isoLine));
+			GenerateTriangles(x, y, Isolines::LineByIndex(isoLine));
 			x += quad_size;
 		}
 
@@ -234,31 +234,35 @@ int SandboxLayer::GetState(int a, int b, int c, int d)
 
 void SandboxLayer::GeneratePoints(float x, float y, float decimalCode) const
 {
-	const glm::vec2 TexIndicesPoints[] = {
+	std::vector<glm::vec2> TexIndicesPoints =
+	{
 		{ 0.0f, 0.0f }
 	};
 
-	const glm::vec3 positions[] = {
-					{ x, y, 0.0f }
-	};
-
+	const std::vector<glm::vec3> positions
+		= {
+						{ x, y, 0.0f }
+		};
 	glm::vec4 color = { decimalCode, decimalCode, decimalCode, 1.0f };
 	s_Instance->Draw(Isolines::Lines::Point, positions, color, TexIndicesPoints);
 }
 
 void SandboxLayer::GenerateLines(float x, float y, Isolines::Lines line) const
 {
-	const glm::vec2 TexIndicesPoints[] = {
+	std::vector<glm::vec2> TexIndicesPoints =
+	{
 			{ 0.0f, 0.0f },
 			{ 0.0f, 1.0f }
 	};
 
-	const glm::vec2 TexIndicesPointsTen[] = {
+	std::vector<glm::vec2> TexIndicesPointsTen =
+	{
 			{ 0.5f, 0.5f },
 			{ 0.0f, 0.5f },
 			{ 0.5f, 1.0f },
 			{ 1.0f, 0.5f }
 	};
+
 
 	glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
@@ -266,109 +270,257 @@ void SandboxLayer::GenerateLines(float x, float y, Isolines::Lines line) const
 	float row = rows - quad_size;
 	float col = cols - quad_size;
 
-	glm::vec3 positions[2];
-	glm::vec3 positionsTen[4];
-
-		/*
-				a
-			d		b
-			.	c
-		*/
-		const glm::vec3 a = { x + midd_size, y + quad_size, 0.0f };
-		const glm::vec3 b = { x + quad_size, y + midd_size, 0.0f };
-		const glm::vec3 c = { x + midd_size,			 y, 0.0f };
-		const glm::vec3 d = {			  x, y + midd_size, 0.0f };
-
+	std::vector<glm::vec3> positions;
+	/*
+			a
+		d		b
+		.	c
+	*/
+	const glm::vec3 A = { x + midd_size, y + quad_size, 0.0f };
+	const glm::vec3 B = { x + quad_size, y + midd_size, 0.0f };
+	const glm::vec3 C = { x + midd_size,			 y, 0.0f };
+	const glm::vec3 D = {			  x, y + midd_size, 0.0f };
 			
-		switch (line)
-		{
-			case Isolines::Lines::One:
-				positions[0] = c;
-				positions[1] = d;
-				break;
+	switch (line)
+	{
+		case Isolines::Lines::One:
+			positions.emplace_back(C);
+			positions.emplace_back(D);
+			break;
 
-			case Isolines::Lines::Two:
-				positions[0] = b;
-				positions[1] = c;
-				break;
+		//case Isolines::Lines::Two:
+		//	positions.emplace_back(B);
+		//	positions.emplace_back(C);
+		//	break;
 
-			case Isolines::Lines::Three:
-				positions[0] = d;
-				positions[1] = b;
-				break;
+		//case Isolines::Lines::Three:
+		//	positions.emplace_back(D);
+		//	positions.emplace_back(B);
+		//	break;
 
-			case Isolines::Lines::Four:
-				positions[0] = a;
-				positions[1] = b;
-				break;
+		//case Isolines::Lines::Four:
+		//	positions.emplace_back(A);
+		//	positions.emplace_back(B);
+		//	break;
 
-			case Isolines::Lines::Five:
-				positions[0] = d;
-				positions[1] = a;
+		//case Isolines::Lines::Five:
+		//	positions.emplace_back(D);
+		//	positions.emplace_back(A);
 
-				s_Instance->Draw(line, positions, color, TexIndicesPoints);
+		//	s_Instance->Draw(line, positions, color, TexIndicesPoints);
+		//	positions.emplace_back(B);
+		//	positions.emplace_back(C);
+		//	break;
 
-				positions[0] = b;
-				positions[1] = c;
-				break;
+		//case Isolines::Lines::Six:
+		//	positions.emplace_back(A);
+		//	positions.emplace_back(C);
+		//	break;
 
-			case Isolines::Lines::Six:
-				positions[0] = a;
-				positions[1] = c;
-				break;
+		//case Isolines::Lines::Seven:
+		//	positions.emplace_back(D);
+		//	positions.emplace_back(A);
+		//	break;
 
-			case Isolines::Lines::Seven:
-				positions[0] = d;
-				positions[1] = a;
-				break;
+		//case Isolines::Lines::Eight:
+		//	positions.emplace_back(D);
+		//	positions.emplace_back(A);
+		//	break;
 
-			case Isolines::Lines::Eight:
-				positions[0] = d;
-				positions[1] = a;
-				break;
+		//case Isolines::Lines::Nine:
+		//	positions.emplace_back(A);
+		//	positions.emplace_back(C);
+		//	break;
 
-			case Isolines::Lines::Nine:
-				positions[0] = a;
-				positions[1] = c;
-				break;
+		//case Isolines::Lines::Ten:
+		//	positions.emplace_back(A);
+		//	positions.emplace_back(B);
 
-			case Isolines::Lines::Ten:
-				positions[0] = a;
-				positions[1] = b;
+		//	s_Instance->Draw(line, positions, color, TexIndicesPoints);
 
-				s_Instance->Draw(line, positions, color, TexIndicesPoints);
+		//	positions.emplace_back(C);
+		//	positions.emplace_back(D);
+		//	break;
 
-				positions[0] = c;
-				positions[1] = d;
+		//case Isolines::Lines::Eleven:
+		//	positions.emplace_back(A);
+		//	positions.emplace_back(B);
+		//	break;
 
-				break;
+		//case Isolines::Lines::Tweleve:
+		//	positions.emplace_back(D);
+		//	positions.emplace_back(B);
+		//	break;
 
-			case Isolines::Lines::Eleven:
-				positions[0] = a;
-				positions[1] = b;
-				break;
+		//case Isolines::Lines::Thirteen:
+		//	positions.emplace_back(B);
+		//	positions.emplace_back(C);
+		//	break;
 
-			case Isolines::Lines::Tweleve:
-				positions[0] = d;
-				positions[1] = b;
-				break;
+		//case Isolines::Lines::Fourteen:
+		//	positions.emplace_back(C);
+		//	positions.emplace_back(D);
+		//	break;
 
-			case Isolines::Lines::Thirteen:
-				positions[0] = b;
-				positions[1] = c;
-				break;
-
-			case Isolines::Lines::Fourteen:
-				positions[0] = c;
-				positions[1] = d;
-				break;
-
-			default:
-				break;
-		};
+		default:
+			break;
+	};
 			
-		if (line == Isolines::Lines::Zero || line == Isolines::Lines::Fifteen)
-			return;
+	//if (line == Isolines::Lines::Zero || line == Isolines::Lines::Fifteen)
+	//	return;
 
-		s_Instance->Draw(line, positions, color, TexIndicesPoints);
+	s_Instance->Draw(line, positions, color, TexIndicesPoints);
+}
+
+void SandboxLayer::GenerateTriangles(float x, float y, Isolines::Lines line) const
+{
+
+	float midd_size = quad_size / 2.0f;
+	float row = rows - quad_size;
+	float col = cols - quad_size;
+	
+	/*
+		D	N   C
+		E		W
+		A	S   B
+	*/
+
+	const glm::vec3 A = {			  x,			 y, 0.0f };
+	const glm::vec3 B = { x + quad_size,			 y, 0.0f };
+	const glm::vec3 C = { x + quad_size, y + quad_size, 0.0f };
+	const glm::vec3 D = {			  x, y + quad_size, 0.0f };
+
+	const glm::vec3 N = { x + midd_size, y + quad_size, 0.0f };
+	const glm::vec3 E = {			  x, y + midd_size, 0.0f };
+	const glm::vec3 W = { x + quad_size, y + midd_size, 0.0f };
+	const glm::vec3 S = { x + midd_size,			 y, 0.0f };
+
+	glm::vec4 color = { 1.0f, 0.0f, 0.0f, 1.0f };
+
+	std::vector<glm::vec3> positions;
+	const ContourLines contourLineProperites = MarchingSquare::ContourLineProperties(line);
+	std::vector<glm::vec2> texIndicesPoints = contourLineProperites.texIndicesPoints;
+
+	switch (line)
+	{
+	case Isolines::Lines::Zero:
+		return;
+		break;
+
+	case Isolines::Lines::One:
+		positions.emplace_back(A);
+		positions.emplace_back(S);
+		positions.emplace_back(E);
+		break;
+
+	case Isolines::Lines::Two:
+		positions.emplace_back(B);
+		positions.emplace_back(W);
+		positions.emplace_back(S);
+		break;
+
+	case Isolines::Lines::Three:
+		positions.emplace_back(A);
+		positions.emplace_back(B);
+		positions.emplace_back(W);
+		positions.emplace_back(E);
+		break;
+
+	case Isolines::Lines::Four:
+		positions.emplace_back(C);
+		positions.emplace_back(N);
+		positions.emplace_back(W);
+		break;
+
+	case Isolines::Lines::Five:
+		positions.emplace_back(A);
+		positions.emplace_back(S);
+		positions.emplace_back(W);
+		positions.emplace_back(C);
+		positions.emplace_back(N);
+		positions.emplace_back(E);
+		break;
+
+	case Isolines::Lines::Six:
+		positions.emplace_back(B);
+		positions.emplace_back(C);
+		positions.emplace_back(N);
+		positions.emplace_back(S);
+		break;
+
+	case Isolines::Lines::Seven:
+		positions.emplace_back(A);
+		positions.emplace_back(B);
+		positions.emplace_back(C);
+		positions.emplace_back(N);
+		positions.emplace_back(E);
+		break;
+
+	case Isolines::Lines::Eight:
+		positions.emplace_back(D);
+		positions.emplace_back(E);
+		positions.emplace_back(N);
+		break;
+
+	case Isolines::Lines::Nine:
+		positions.emplace_back(D);
+		positions.emplace_back(A);
+		positions.emplace_back(S);
+		positions.emplace_back(N);
+		break;
+
+	case Isolines::Lines::Ten:
+		positions.emplace_back(B);
+		positions.emplace_back(W);
+		positions.emplace_back(N);
+		positions.emplace_back(D);
+		positions.emplace_back(E);
+		positions.emplace_back(S);
+		break;
+
+	case Isolines::Lines::Eleven:
+		positions.emplace_back(D);
+		positions.emplace_back(A);
+		positions.emplace_back(B);
+		positions.emplace_back(W);
+		positions.emplace_back(N);
+		break;
+
+	case Isolines::Lines::Tweleve:
+		positions.emplace_back(C);
+		positions.emplace_back(D);
+		positions.emplace_back(E);
+		positions.emplace_back(W);
+		break;
+
+	case Isolines::Lines::Thirteen:
+		positions.emplace_back(C);
+		positions.emplace_back(D);
+		positions.emplace_back(A);
+		positions.emplace_back(S);
+		positions.emplace_back(W);
+		break;
+
+	case Isolines::Lines::Fourteen:
+		positions.emplace_back(B);
+		positions.emplace_back(C);
+		positions.emplace_back(D);
+		positions.emplace_back(E);
+		positions.emplace_back(S);
+		break;
+
+	case Isolines::Lines::Fifteen:
+		positions.emplace_back(A);
+		positions.emplace_back(B);
+		positions.emplace_back(C);
+		positions.emplace_back(D);
+		break;
+
+	default:
+		break;
+	};
+
+	//if (line == Isolines::Lines::Zero) return;
+
+	s_Instance->Draw(line, positions, color, texIndicesPoints);
 }

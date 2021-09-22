@@ -4,7 +4,7 @@
 #include <GLCore.h>
 #include <array>
 #include <glad\glad.h>
-#include "Handlers.h"
+#include "MarchingSquare.h"
 
 struct Vertex
 {
@@ -26,16 +26,17 @@ struct Stats
 class ShapeHandler
 {
 public:
-	ShapeHandler(Isolines::Lines id, const int* indexSequence, const GLenum type,
+	ShapeHandler(Isolines::Lines id, std::vector<int>& indexSequence, const GLenum type,
 		const uint32_t indexOffset, const uint32_t vertexOffset, const size_t maxShapeCount);
 
 	ShapeHandler(Isolines::Lines id, const GLenum type, const uint32_t indexOffset,
 		const uint32_t vertexOffset, const size_t maxShapeCount);
 	virtual ~ShapeHandler() = default;
 
-	virtual void Draw(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]) = 0;
-	void DrawShape(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
-	void PlotPoint(const glm::vec3 positions[], const glm::vec4& color, const glm::vec2 TexIndices[]);
+	virtual void Draw(const std::vector<glm::vec3> positions, const glm::vec4& color, const std::vector<glm::vec2> TexIndices) = 0;
+	
+	void DrawShape(const std::vector<glm::vec3> positions, const glm::vec4& color, const std::vector<glm::vec2> TexIndices);
+	void PlotPoint(const std::vector<glm::vec3> positions, const glm::vec4& color, const std::vector<glm::vec2> TexIndices);
 
 	void Shutdown();
 
@@ -50,7 +51,7 @@ public:
 	void ResetStats();
 
 private:
-	Isolines::Lines ID;
+	Isolines::Lines ID = Isolines::Lines::Zero;
 	GLuint quadVA = 0;
 	GLuint quadVB = 0;
 	GLuint quadIB = 0;
@@ -61,9 +62,9 @@ private:
 	const size_t MaxShapeCount = 0;
 	const size_t MaxVertexCount = 0;
 	const size_t MaxIndexCount = 0;
-	const GLenum Type;
+	const GLenum Type = 0;
 
-	const int* IndexSequence;
+	std::vector<int>& IndexSequence;
 	//Points beginning of the buffer. This is in CPU
 	Vertex* shapeBuffer = nullptr;
 	//Where we are up to
