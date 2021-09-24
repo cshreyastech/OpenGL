@@ -2,7 +2,7 @@
 
 
 
-PointHandler::PointHandler(Isolines::Lines id, const GLenum type, const uint32_t indexOffset,
+PointHandler::PointHandler(Isosurface::Facet id, const GLenum type, const uint32_t indexOffset,
 	const uint32_t vertexOffset, const size_t maxPointCount)
 	:ShapeHandler(id, type, indexOffset, vertexOffset, maxPointCount)
 {

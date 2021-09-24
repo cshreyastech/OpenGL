@@ -6,9 +6,9 @@
 #include <unordered_map>
 #include<glm/glm.hpp>
 
-namespace Isolines {
+namespace Isosurface{
 
-	enum class Lines
+	enum class Facet
 	{
 		Zero = 0,
 		One, Two, Three, Four, Five,
@@ -17,17 +17,22 @@ namespace Isolines {
 		Point
 	};
 
-	static const Lines allLines[] = {
-		Lines::One, Lines::Two, Lines::Three, Lines::Four, Lines::Five,
-		Lines::Six, Lines::Seven, Lines::Eight, Lines::Nine, Lines::Ten,
-		Lines::Eleven, Lines::Tweleve, Lines::Thirteen, Lines::Fourteen,
-		Lines::Fifteen
+	static const Facet allFacet[] = {
+		Facet::One, Facet::Two, Facet::Three, Facet::Four, Facet::Five,
+		Facet::Six, Facet::Seven, Facet::Eight, Facet::Nine, Facet::Ten,
+		Facet::Eleven, Facet::Tweleve, Facet::Thirteen, Facet::Fourteen,
+		Facet::Fifteen
 	};
 
-	static const Lines LineByIndex(int i) { return static_cast<Lines>(i); };
+	static const Facet FacetByIndex(int i) { return static_cast<Facet>(i); };
 }
 
-struct ContourLines
+struct GRIDPOINT {
+	glm::vec3 edgePosition;	//position of each corner of the grid in world space
+	float isoSurfaceValue;	//value of the function at this grid corner
+};
+
+struct ContourFacet
 {
 	std::vector<int> indexSequence;
 	uint32_t vertexOffset;
@@ -37,19 +42,22 @@ struct ContourLines
 class MarchingSquare
 {
 public:
-	static const inline ContourLines& ContourLineProperties(Isolines::Lines line)
+	static const inline ContourFacet& ContourFacetProperties(Isosurface::Facet facet)
 	{
-		return contourLinesMap_.at(line);
+		return contourFacetMap_.at(facet);
 	}
 
 private:
 	MarchingSquare();
 
 private:
-	static const inline std::unordered_map<Isolines::Lines, ContourLines> contourLinesMap_ =
+
+
+
+	static const inline std::unordered_map<Isosurface::Facet, ContourFacet> contourFacetMap_ =
 	{
 		{
-			Isolines::Lines::Zero,
+			Isosurface::Facet::Zero,
 			{
 				std::vector<int>{ }, 0,
 				std::vector<glm::vec2>
@@ -58,9 +66,9 @@ private:
 			}
 		},
 		{
-			Isolines::Lines::One,
+			Isosurface::Facet::One,
 			{ 
-				std::vector<int>{ 0, 1, 2 }, 3,
+				std::vector<int>{ 0, 1, 2, }, 3,
 				std::vector<glm::vec2>
 				{ 
 					{ 0.0f, 0.0f }, 
@@ -70,7 +78,7 @@ private:
 			} 
 		},
 		{
-			Isolines::Lines::Two,
+			Isosurface::Facet::Two,
 			{
 				std::vector<int>{ 0, 1, 2 }, 3,
 				std::vector<glm::vec2>
@@ -82,7 +90,7 @@ private:
 			}
 		},
 		{
-			Isolines::Lines::Three,
+			Isosurface::Facet::Three,
 			{
 				std::vector<int>{ 0, 1, 2, 2, 3, 0 }, 4,
 				std::vector<glm::vec2>
@@ -95,7 +103,7 @@ private:
 			}
 		},
 		{
-			Isolines::Lines::Four,
+			Isosurface::Facet::Four,
 			{
 				std::vector<int>{ 0, 1, 2 }, 3,
 				std::vector<glm::vec2>
@@ -107,7 +115,7 @@ private:
 			}
 		},
 		{   
-			Isolines::Lines::Five, 
+			Isosurface::Facet::Five, 
 			{ 
 				std::vector<int>{ 0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 5 }, 6,
 				std::vector<glm::vec2>
@@ -122,7 +130,7 @@ private:
 			} 
 		},
 		{
-			Isolines::Lines::Six,
+			Isosurface::Facet::Six,
 			{
 				std::vector<int>{ 0, 1, 2, 2, 3, 0 }, 4,
 				std::vector<glm::vec2>
@@ -135,7 +143,7 @@ private:
 			}
 		},
 		{
-			Isolines::Lines::Seven,
+			Isosurface::Facet::Seven,
 			{
 				std::vector<int>{ 0, 1, 2, 0, 2, 3, 0, 3, 4 }, 5,
 				std::vector<glm::vec2>
@@ -149,7 +157,7 @@ private:
 			}
 		},
 		{
-			Isolines::Lines::Eight,
+			Isosurface::Facet::Eight,
 			{
 				std::vector<int>{ 0, 1, 2 }, 3,
 				std::vector<glm::vec2>
@@ -161,7 +169,7 @@ private:
 			}
 		},
 		{
-			Isolines::Lines::Nine,
+			Isosurface::Facet::Nine,
 			{
 				std::vector<int>{ 0, 1, 2, 2, 3, 0 }, 4,
 				std::vector<glm::vec2>
@@ -174,7 +182,7 @@ private:
 			}
 		},
 		{
-			Isolines::Lines::Ten,
+			Isosurface::Facet::Ten,
 			{
 				std::vector<int>{ 0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 5 }, 6,
 				std::vector<glm::vec2>
@@ -189,7 +197,7 @@ private:
 			}
 		},
 		{
-			Isolines::Lines::Eleven,
+			Isosurface::Facet::Eleven,
 			{
 				std::vector<int>{ 0, 1, 2, 0, 2, 3, 0, 3, 4 }, 5,
 				std::vector<glm::vec2>
@@ -203,7 +211,7 @@ private:
 			}
 		},
 		{
-			Isolines::Lines::Tweleve,
+			Isosurface::Facet::Tweleve,
 			{
 				std::vector<int>{ 0, 1, 2, 2, 3, 0 }, 4,
 				std::vector<glm::vec2>
@@ -216,7 +224,7 @@ private:
 			}
 		},
 		{
-			Isolines::Lines::Thirteen,
+			Isosurface::Facet::Thirteen,
 			{
 				std::vector<int>{ 0, 1, 2, 0, 2, 3, 0, 3, 4 }, 5,
 				std::vector<glm::vec2>
@@ -230,7 +238,7 @@ private:
 			}
 		},
 		{
-			Isolines::Lines::Fourteen,
+			Isosurface::Facet::Fourteen,
 			{
 				std::vector<int>{ 0, 1, 2, 0, 2, 3, 0, 3, 4 }, 5,
 				std::vector<glm::vec2>
@@ -244,7 +252,7 @@ private:
 			}
 		},
 		{
-			Isolines::Lines::Fifteen,
+			Isosurface::Facet::Fifteen,
 			{
 				std::vector<int>{ 0, 1, 2, 2, 3, 0 }, 4,
 				std::vector<glm::vec2>

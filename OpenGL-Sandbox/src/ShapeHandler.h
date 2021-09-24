@@ -26,10 +26,10 @@ struct Stats
 class ShapeHandler
 {
 public:
-	ShapeHandler(Isolines::Lines id, std::vector<int>& indexSequence, const GLenum type,
+	ShapeHandler(Isosurface::Facet id, std::vector<int>& indexSequence, const GLenum type,
 		const uint32_t indexOffset, const uint32_t vertexOffset, const size_t maxShapeCount);
 
-	ShapeHandler(Isolines::Lines id, const GLenum type, const uint32_t indexOffset,
+	ShapeHandler(Isosurface::Facet id, const GLenum type, const uint32_t indexOffset,
 		const uint32_t vertexOffset, const size_t maxShapeCount);
 	virtual ~ShapeHandler() = default;
 
@@ -51,7 +51,7 @@ public:
 	void ResetStats();
 
 private:
-	Isolines::Lines ID = Isolines::Lines::Zero;
+	Isosurface::Facet ID = Isosurface::Facet::Zero;
 	GLuint quadVA = 0;
 	GLuint quadVB = 0;
 	GLuint quadIB = 0;

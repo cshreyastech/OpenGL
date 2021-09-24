@@ -25,24 +25,16 @@ Renderer::~Renderer()
 
 void Renderer::Init()
 {
-	const int batchSize = 1000;
-	shapeHandlerMap[Isolines::Lines::Point] =
-		new PointHandler(Isolines::Lines::Point, GL_POINTS, 1, 1, batchSize);
-
-	/*shapeHandlerMap[ShapeHandlers::Quad] =
-		new QuadHandler(ShapeHandlers::Quad,
-			new int[6]{ 0, 1, 2, 2, 3, 0 }, GL_TRIANGLES, 6, 4, 1000);*/
-
-	//for (const Isolines::Lines line : Isolines::allLines)
-	//	shapeHandlerMap[line] =
-	//		new LineHandler(line, std::vector<int>{ 0, 1 }, GL_LINES, 2, 2, batchSize);
+	const int batchSize = 10;
+	shapeHandlerMap[Isosurface::Facet::Point] =
+		new PointHandler(Isosurface::Facet::Point, GL_POINTS, 1, 1, batchSize);
 
 
-	for (const Isolines::Lines line : Isolines::allLines)
+	for (const Isosurface::Facet facet : Isosurface::allFacet)
 	{
-		const ContourLines contourLineProperites = MarchingSquare::ContourLineProperties(line);
-		shapeHandlerMap[line] =
-			new TriangleHandler(line, contourLineProperites.indexSequence, 
+		const ContourFacet contourLineProperites = MarchingSquare::ContourFacetProperties(facet);
+		shapeHandlerMap[facet] =
+			new TriangleHandler(facet, contourLineProperites.indexSequence, 
 				GL_TRIANGLES, contourLineProperites.indexSequence.size(),
 				contourLineProperites.vertexOffset, batchSize);
 	}
@@ -89,7 +81,7 @@ void Renderer::Flush()
 	}
 }
 
-void Renderer::Draw(Isolines::Lines handler, const std::vector<glm::vec3> positions, const glm::vec4& color, const std::vector<glm::vec2> TexIndices)
+void Renderer::Draw(Isosurface::Facet handler, const std::vector<glm::vec3> positions, const glm::vec4& color, const std::vector<glm::vec2> TexIndices)
 {
 	shapeHandlerMap[handler]->Draw(positions, color, TexIndices);
 }

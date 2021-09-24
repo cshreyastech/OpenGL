@@ -1,3 +1,4 @@
+#pragma once
 #include "SandboxLayer.h"
 #include <stb_image/stb_image.h>
 
@@ -54,7 +55,8 @@ void SandboxLayer::OnAttach()
 void SandboxLayer::OnDetach()
 {
 	s_Instance->Shutdown();
-	delete[] contour;
+	//delete[] contour;
+	delete[] GRID;
 }
 
 void SandboxLayer::OnEvent(Event& event)
@@ -150,234 +152,216 @@ void SandboxLayer::OnImGuiRender()
 
 void SandboxLayer::GenerateContour()
 {
-
+	//srand((unsigned)time(NULL));
 	std::cout << "nRows: " << nRows << ", nCols: " << nCols << std::endl;
-	contour = new float* [nRows];
 
+
+	GRID = new GRIDPOINT* [nRows];
 	for (int i = 0; i < nRows; i++)
-		contour[i] = new float[nCols];
+		GRID[i] = new GRIDPOINT[nCols];
 
-	for (int row = 0; row < nRows; row++)
-	{
-		for (int col = 0; col < nCols; col++)
-		{
-			contour[row][col] = rand() % 2;
-		}
-	}
-}
 
-void SandboxLayer::RenderContour()
-{
 	int row = 0, col = 0;
 	for (float y = -rows; y <= rows; y += quad_size)
 	{
 		col = 0;
 		for (float x = -cols; x <= cols; x += quad_size)
 		{
-			GeneratePoints(x, y, contour[row][col]);
+			const float isoSurfaceValue = lowestISOvalue + static_cast <float> (rand()) /
+			(static_cast <float> (RAND_MAX / (highestISOvalue - (lowestISOvalue))));
+			GRIDPOINT gridPoint;
+			gridPoint.edgePosition = { x, y, 0.0f };
+			gridPoint.isoSurfaceValue = isoSurfaceValue;
+			GRID[row][col] = gridPoint;
 			col++;
 		}
 		row++;
 	}
 
-	float x = -rows, y = -cols;
+	//GRID[0][0].isoSurfaceValue = lowestISOvalue;
+	//GRID[0][1].isoSurfaceValue = lowestISOvalue;
+	//GRID[1][1].isoSurfaceValue = lowestISOvalue;
+	//GRID[1][0].isoSurfaceValue = lowestISOvalue;
+
+	//for (int row = 0; row < nRows; row++)
+	//{
+	//	for (int col = 0; col < nCols; col++)
+	//	{
+	//		const float isoSurfaceValue = lowestISOvalue + static_cast <float> (rand()) /
+	//			(static_cast <float> (RAND_MAX / (highestISOvalue - (lowestISOvalue))));
+	//		GRIDPOINT gridPoint;
+	//		gridPoint.edgePosition = { row, col };
+	//		gridPoint.isoSurfaceValue = isoSurfaceValue;
+	//		GRID[row][col] = gridPoint;
+	//		std::cout << row << ", " << col << ", " << isoSurfaceValue << std::endl;
+	//	}
+	//}
+
+
+
+
+
+
+
+	//contour = new float* [nRows];
+	//for (int i = 0; i < nRows; i++)
+	//	contour[i] = new float[nCols];
+
+	//for (int row = 0; row < nRows; row++)
+	//{
+	//	for (int col = 0; col < nCols; col++)
+	//	{
+	//		contour[row][col] = rand() % 2;
+
+	//		std::cout << GRID[row][col].isoSurfaceValue << ", ";
+	//	}
+	//	std::cout << std::endl;
+	//}
+
+
+	//for (int row = 0; row < nRows - 1; row++)
+	//{
+	//	for (int col = 0; col < nCols - 1; col++)
+	//	{
+	//		int cubeindex = 0;
+
+	//		if (GRID[row][col].isoSurfaceValue < isoLevel) cubeindex		 |= 1;
+	//		if (GRID[row][col + 1].isoSurfaceValue < isoLevel) cubeindex	 |= 2;
+	//		if (GRID[row + 1][col + 1].isoSurfaceValue < isoLevel) cubeindex |= 4;
+	//		if (GRID[row + 1][col].isoSurfaceValue < isoLevel) cubeindex	 |= 8;
+
+	//		std::cout << "cubeindex: " << cubeindex << ", ";
+	//	}
+	//	std::cout << std::endl;
+	//}
+
+
+}
+
+void SandboxLayer::RenderContour()
+{
+	//int row = 0, col = 0;
+	//for (float y = -rows; y <= rows; y += quad_size)
+	//{
+	//	col = 0;
+	//	for (float x = -cols; x <= cols; x += quad_size)
+	//	{
+	//		GeneratePoints(x, y, contour[row][col]);
+	//		col++;
+	//	}
+	//	row++;
+	//}
+
+
 	for (int row = 0; row < nRows - 1; row++)
 	{
-		x = -cols;
 		for (int col = 0; col < nCols - 1; col++)
 		{
-			int isoLine = GetState(contour[row + 1][col], contour[row + 1][col + 1],
-							contour[row][col + 1], contour[row][col]);
-			//GenerateLines(x, y, Isolines::LineByIndex(isoLine));
-			GenerateTriangles(x, y, Isolines::LineByIndex(isoLine));
-			x += quad_size;
-		}
+			int facetIndex = 0;
+			GRIDPOINT p1 = GRID[row][col];
+			GRIDPOINT p2 = GRID[row][col + 1];
+			GRIDPOINT p4 = GRID[row + 1][col + 1];
+			GRIDPOINT p8 = GRID[row + 1][col];
 
-		y += quad_size;
+			if (p1.isoSurfaceValue < isoLevel) facetIndex |= 1;
+			if (p2.isoSurfaceValue < isoLevel) facetIndex |= 2;
+			if (p4.isoSurfaceValue < isoLevel) facetIndex |= 4;
+			if (p8.isoSurfaceValue < isoLevel) facetIndex |= 8;
+
+			//std::cout << "facetIndex: " << facetIndex << ", ";
+
+			GeneratePoints(GRID[row][col].edgePosition, (float)facetIndex / 15.0f);
+
+			/*
+				D	N   C
+				E		W
+				A	S   B
+			*/
+
+			/*const glm::vec3 A = { x,			 y, 0.0f };
+			const glm::vec3 B = { x + quad_size,			 y, 0.0f };
+			const glm::vec3 C = { x + quad_size, y + quad_size, 0.0f };
+			const glm::vec3 D = { x, y + quad_size, 0.0f };
+
+			const glm::vec3 N = { x + surface_point, y + quad_size, 0.0f };
+			const glm::vec3 E = { x, y + surface_point, 0.0f };
+			const glm::vec3 W = { x + quad_size, y + surface_point, 0.0f };
+			const glm::vec3 S = { x + surface_point,			 y, 0.0f };*/
+
+			const glm::vec3 A = p1.edgePosition;
+			const glm::vec3 B = p2.edgePosition;
+			const glm::vec3 C = p4.edgePosition;
+			const glm::vec3 D = p8.edgePosition;
+
+			float surface_point = quad_size / 2.0f;
+			const glm::vec3 N = { A[0] + surface_point,					D[1], 0.0f };
+			const glm::vec3 E = {				  A[0], A[1] + surface_point, 0.0f };
+			const glm::vec3 W = {				  B[0], B[1] + surface_point, 0.0f };
+			const glm::vec3 S = { A[0] + surface_point,					A[1], 0.0f };
+
+			//GenerateTriangles(1, 1, Isosurface::FacetByIndex(facetIndex));
+			GenerateTriangles(A, B, C, D, N, E, W, S, Isosurface::FacetByIndex(facetIndex));
+		}
+		std::cout << std::endl;
 	}
 
-	//delete[] contour;
+
+	//float x = -rows, y = -cols;
+	//for (int row = 0; row < nRows - 1; row++)
+	//{
+	//	x = -cols;
+	//	for (int col = 0; col < nCols - 1; col++)
+	//	{
+
+	//		int isoLine = GetState(contour[row + 1][col], contour[row + 1][col + 1],
+	//						contour[row][col + 1], contour[row][col]);
+	//		std::cout <<
+	//			contour[row + 1][col] << ", " <<
+	//			contour[row + 1][col + 1] << ", " <<
+	//			contour[row][col + 1] << ", " <<
+	//			contour[row][col] << ", " <<
+	//			isoLine << 
+	//			std::endl;
+
+	//		//GenerateLines(x, y, Isolines::LineByIndex(isoLine));
+	//		//GenerateTriangles(x, y, Isolines::LineByIndex(isoLine));
+	//		x += quad_size;
+	//	}
+	//	y += quad_size;
+	//}
+	//std::cout << "-------------" << std::endl;
+
 }
 
-int SandboxLayer::GetState(int a, int b, int c, int d)
-{
-	return a * 8 + b * 4 + c * 2 + d * 1;
-}
-
-//void SandboxLayer::GenerateQuads()
+//int SandboxLayer::GetState(int a, int b, int c, int d)
 //{
-//	const glm::vec2 TexIndices[] = {
-//	{ 0.0f, 0.0f },
-//	{ 1.0f, 0.0f },
-//	{ 1.0f, 1.0f },
-//	{ 0.0f, 1.0f }
-//	};
-//
-//	
-//	for (float y = -rows; y < rows; y += quad_size)
-//	{
-//		for (float x = -cols; x < cols; x += quad_size)
-//		{
-//			glm::vec4 color = { (x + 10) / 20.0f, 0.2f, (y + 10) / 20.0f, 1.0f };
-//
-//			const glm::vec3 positions[] = {
-//				{			  x,			 y, 0.0f },
-//				{ x + quad_size,			 y, 0.0f },
-//				{ x + quad_size, y + quad_size, 0.0f },
-//				{			  x, y + quad_size, 0.0f }
-//			};
-//
-//			s_Instance->Draw(Isolines::Lines::Quad, positions, color, TexIndices);
-//		}
-//	}
+//	return a * 8 + b * 4 + c * 2 + d * 1;
 //}
 
-void SandboxLayer::GeneratePoints(float x, float y, float decimalCode) const
+void SandboxLayer::GeneratePoints(glm::vec3 position, float decimalCode) const
 {
 	std::vector<glm::vec2> TexIndicesPoints =
 	{
 		{ 0.0f, 0.0f }
 	};
 
-	const std::vector<glm::vec3> positions
-		= {
-						{ x, y, 0.0f }
-		};
+	const std::vector<glm::vec3> positions = 
+	{
+		position
+	};
 	glm::vec4 color = { decimalCode, decimalCode, decimalCode, 1.0f };
-	s_Instance->Draw(Isolines::Lines::Point, positions, color, TexIndicesPoints);
+	s_Instance->Draw(Isosurface::Facet::Point, positions, color, TexIndicesPoints);
 }
 
-void SandboxLayer::GenerateLines(float x, float y, Isolines::Lines line) const
-{
-	std::vector<glm::vec2> TexIndicesPoints =
-	{
-			{ 0.0f, 0.0f },
-			{ 0.0f, 1.0f }
-	};
 
-	std::vector<glm::vec2> TexIndicesPointsTen =
-	{
-			{ 0.5f, 0.5f },
-			{ 0.0f, 0.5f },
-			{ 0.5f, 1.0f },
-			{ 1.0f, 0.5f }
-	};
-
-
-	glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-	float midd_size = quad_size / 2.0f;
-	float row = rows - quad_size;
-	float col = cols - quad_size;
-
-	std::vector<glm::vec3> positions;
-	/*
-			a
-		d		b
-		.	c
-	*/
-	const glm::vec3 A = { x + midd_size, y + quad_size, 0.0f };
-	const glm::vec3 B = { x + quad_size, y + midd_size, 0.0f };
-	const glm::vec3 C = { x + midd_size,			 y, 0.0f };
-	const glm::vec3 D = {			  x, y + midd_size, 0.0f };
-			
-	switch (line)
-	{
-		case Isolines::Lines::One:
-			positions.emplace_back(C);
-			positions.emplace_back(D);
-			break;
-
-		//case Isolines::Lines::Two:
-		//	positions.emplace_back(B);
-		//	positions.emplace_back(C);
-		//	break;
-
-		//case Isolines::Lines::Three:
-		//	positions.emplace_back(D);
-		//	positions.emplace_back(B);
-		//	break;
-
-		//case Isolines::Lines::Four:
-		//	positions.emplace_back(A);
-		//	positions.emplace_back(B);
-		//	break;
-
-		//case Isolines::Lines::Five:
-		//	positions.emplace_back(D);
-		//	positions.emplace_back(A);
-
-		//	s_Instance->Draw(line, positions, color, TexIndicesPoints);
-		//	positions.emplace_back(B);
-		//	positions.emplace_back(C);
-		//	break;
-
-		//case Isolines::Lines::Six:
-		//	positions.emplace_back(A);
-		//	positions.emplace_back(C);
-		//	break;
-
-		//case Isolines::Lines::Seven:
-		//	positions.emplace_back(D);
-		//	positions.emplace_back(A);
-		//	break;
-
-		//case Isolines::Lines::Eight:
-		//	positions.emplace_back(D);
-		//	positions.emplace_back(A);
-		//	break;
-
-		//case Isolines::Lines::Nine:
-		//	positions.emplace_back(A);
-		//	positions.emplace_back(C);
-		//	break;
-
-		//case Isolines::Lines::Ten:
-		//	positions.emplace_back(A);
-		//	positions.emplace_back(B);
-
-		//	s_Instance->Draw(line, positions, color, TexIndicesPoints);
-
-		//	positions.emplace_back(C);
-		//	positions.emplace_back(D);
-		//	break;
-
-		//case Isolines::Lines::Eleven:
-		//	positions.emplace_back(A);
-		//	positions.emplace_back(B);
-		//	break;
-
-		//case Isolines::Lines::Tweleve:
-		//	positions.emplace_back(D);
-		//	positions.emplace_back(B);
-		//	break;
-
-		//case Isolines::Lines::Thirteen:
-		//	positions.emplace_back(B);
-		//	positions.emplace_back(C);
-		//	break;
-
-		//case Isolines::Lines::Fourteen:
-		//	positions.emplace_back(C);
-		//	positions.emplace_back(D);
-		//	break;
-
-		default:
-			break;
-	};
-			
-	//if (line == Isolines::Lines::Zero || line == Isolines::Lines::Fifteen)
-	//	return;
-
-	s_Instance->Draw(line, positions, color, TexIndicesPoints);
-}
-
-void SandboxLayer::GenerateTriangles(float x, float y, Isolines::Lines line) const
+void SandboxLayer::GenerateTriangles(const glm::vec3 A, const glm::vec3 B, const glm::vec3 C, 
+	const glm::vec3 D, const glm::vec3 N, const glm::vec3 E, const glm::vec3 W, const glm::vec3 S, 
+	Isosurface::Facet facet) const
 {
 
-	float midd_size = quad_size / 2.0f;
-	float row = rows - quad_size;
-	float col = cols - quad_size;
+	//float surface_point = quad_size / 2.0f;
+	//float row = rows - quad_size;
+	//float col = cols - quad_size;
 	
 	/*
 		D	N   C
@@ -385,54 +369,54 @@ void SandboxLayer::GenerateTriangles(float x, float y, Isolines::Lines line) con
 		A	S   B
 	*/
 
-	const glm::vec3 A = {			  x,			 y, 0.0f };
-	const glm::vec3 B = { x + quad_size,			 y, 0.0f };
-	const glm::vec3 C = { x + quad_size, y + quad_size, 0.0f };
-	const glm::vec3 D = {			  x, y + quad_size, 0.0f };
+	//const glm::vec3 A = {			  x,			 y, 0.0f };
+	//const glm::vec3 B = { x + quad_size,			 y, 0.0f };
+	//const glm::vec3 C = { x + quad_size, y + quad_size, 0.0f };
+	//const glm::vec3 D = {			  x, y + quad_size, 0.0f };
 
-	const glm::vec3 N = { x + midd_size, y + quad_size, 0.0f };
-	const glm::vec3 E = {			  x, y + midd_size, 0.0f };
-	const glm::vec3 W = { x + quad_size, y + midd_size, 0.0f };
-	const glm::vec3 S = { x + midd_size,			 y, 0.0f };
+	//const glm::vec3 N = { x + surface_point, y + quad_size, 0.0f };
+	//const glm::vec3 E = {			  x, y + surface_point, 0.0f };
+	//const glm::vec3 W = { x + quad_size, y + surface_point, 0.0f };
+	//const glm::vec3 S = { x + surface_point,			 y, 0.0f };
 
 	glm::vec4 color = { 1.0f, 0.0f, 0.0f, 1.0f };
 
 	std::vector<glm::vec3> positions;
-	const ContourLines contourLineProperites = MarchingSquare::ContourLineProperties(line);
-	std::vector<glm::vec2> texIndicesPoints = contourLineProperites.texIndicesPoints;
+	const ContourFacet contourFacetProperites = MarchingSquare::ContourFacetProperties(facet);
+	std::vector<glm::vec2> texIndicesPoints = contourFacetProperites.texIndicesPoints;
 
-	switch (line)
+	switch (facet)
 	{
-	case Isolines::Lines::Zero:
+	case Isosurface::Facet::Zero:
 		return;
 		break;
 
-	case Isolines::Lines::One:
+	case Isosurface::Facet::One:
 		positions.emplace_back(A);
 		positions.emplace_back(S);
 		positions.emplace_back(E);
 		break;
 
-	case Isolines::Lines::Two:
+	case Isosurface::Facet::Two:
 		positions.emplace_back(B);
 		positions.emplace_back(W);
 		positions.emplace_back(S);
 		break;
 
-	case Isolines::Lines::Three:
+	case Isosurface::Facet::Three:
 		positions.emplace_back(A);
 		positions.emplace_back(B);
 		positions.emplace_back(W);
 		positions.emplace_back(E);
 		break;
 
-	case Isolines::Lines::Four:
+	case Isosurface::Facet::Four:
 		positions.emplace_back(C);
 		positions.emplace_back(N);
 		positions.emplace_back(W);
 		break;
 
-	case Isolines::Lines::Five:
+	case Isosurface::Facet::Five:
 		positions.emplace_back(A);
 		positions.emplace_back(S);
 		positions.emplace_back(W);
@@ -441,14 +425,14 @@ void SandboxLayer::GenerateTriangles(float x, float y, Isolines::Lines line) con
 		positions.emplace_back(E);
 		break;
 
-	case Isolines::Lines::Six:
+	case Isosurface::Facet::Six:
 		positions.emplace_back(B);
 		positions.emplace_back(C);
 		positions.emplace_back(N);
 		positions.emplace_back(S);
 		break;
 
-	case Isolines::Lines::Seven:
+	case Isosurface::Facet::Seven:
 		positions.emplace_back(A);
 		positions.emplace_back(B);
 		positions.emplace_back(C);
@@ -456,20 +440,20 @@ void SandboxLayer::GenerateTriangles(float x, float y, Isolines::Lines line) con
 		positions.emplace_back(E);
 		break;
 
-	case Isolines::Lines::Eight:
+	case Isosurface::Facet::Eight:
 		positions.emplace_back(D);
 		positions.emplace_back(E);
 		positions.emplace_back(N);
 		break;
 
-	case Isolines::Lines::Nine:
+	case Isosurface::Facet::Nine:
 		positions.emplace_back(D);
 		positions.emplace_back(A);
 		positions.emplace_back(S);
 		positions.emplace_back(N);
 		break;
 
-	case Isolines::Lines::Ten:
+	case Isosurface::Facet::Ten:
 		positions.emplace_back(B);
 		positions.emplace_back(W);
 		positions.emplace_back(N);
@@ -478,7 +462,7 @@ void SandboxLayer::GenerateTriangles(float x, float y, Isolines::Lines line) con
 		positions.emplace_back(S);
 		break;
 
-	case Isolines::Lines::Eleven:
+	case Isosurface::Facet::Eleven:
 		positions.emplace_back(D);
 		positions.emplace_back(A);
 		positions.emplace_back(B);
@@ -486,14 +470,14 @@ void SandboxLayer::GenerateTriangles(float x, float y, Isolines::Lines line) con
 		positions.emplace_back(N);
 		break;
 
-	case Isolines::Lines::Tweleve:
+	case Isosurface::Facet::Tweleve:
 		positions.emplace_back(C);
 		positions.emplace_back(D);
 		positions.emplace_back(E);
 		positions.emplace_back(W);
 		break;
 
-	case Isolines::Lines::Thirteen:
+	case Isosurface::Facet::Thirteen:
 		positions.emplace_back(C);
 		positions.emplace_back(D);
 		positions.emplace_back(A);
@@ -501,7 +485,7 @@ void SandboxLayer::GenerateTriangles(float x, float y, Isolines::Lines line) con
 		positions.emplace_back(W);
 		break;
 
-	case Isolines::Lines::Fourteen:
+	case Isosurface::Facet::Fourteen:
 		positions.emplace_back(B);
 		positions.emplace_back(C);
 		positions.emplace_back(D);
@@ -509,7 +493,7 @@ void SandboxLayer::GenerateTriangles(float x, float y, Isolines::Lines line) con
 		positions.emplace_back(S);
 		break;
 
-	case Isolines::Lines::Fifteen:
+	case Isosurface::Facet::Fifteen:
 		positions.emplace_back(A);
 		positions.emplace_back(B);
 		positions.emplace_back(C);
@@ -520,7 +504,5 @@ void SandboxLayer::GenerateTriangles(float x, float y, Isolines::Lines line) con
 		break;
 	};
 
-	//if (line == Isolines::Lines::Zero) return;
-
-	s_Instance->Draw(line, positions, color, texIndicesPoints);
+	s_Instance->Draw(facet, positions, color, texIndicesPoints);
 }

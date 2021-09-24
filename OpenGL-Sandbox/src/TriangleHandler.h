@@ -4,7 +4,7 @@
 class TriangleHandler : public ShapeHandler
 {
 public:
-	TriangleHandler(Isolines::Lines id, std::vector<int> indexSequence, const GLenum type,
+	TriangleHandler(Isosurface::Facet id, std::vector<int> indexSequence, const GLenum type,
 		const uint32_t indexOffset, const uint32_t vertexOffset, const size_t maxTriangleCount);
 	virtual ~TriangleHandler();
 	
