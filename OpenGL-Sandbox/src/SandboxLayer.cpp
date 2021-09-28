@@ -5,8 +5,6 @@
 using namespace GLCore;
 using namespace GLCore::Utils;
 
-
-
 SandboxLayer::SandboxLayer()
 	: Layer("Sandbox"), m_CameraController(16.0f / 9.0f)
 {
@@ -50,13 +48,19 @@ void SandboxLayer::OnAttach()
 	s_Instance->Init();
 
 	GenerateContour();
+
+	grid = Grid::Instance(quad_size, lowestISOvalue, highestISOvalue);
+	//grid->Print();
+	grid->CleanUp();
 }
 
 void SandboxLayer::OnDetach()
 {
 	s_Instance->Shutdown();
-	//delete[] contour;
-	delete[] GRID;
+	delete[] contour;
+	//delete[] GRID;
+	grid->CleanUp();
+	delete grid;
 }
 
 void SandboxLayer::OnEvent(Event& event)
@@ -153,30 +157,30 @@ void SandboxLayer::OnImGuiRender()
 void SandboxLayer::GenerateContour()
 {
 	//srand((unsigned)time(NULL));
-	std::cout << "nRows: " << nRows << ", nCols: " << nCols << std::endl;
+	std::cout << "nHorizontalPoints: " << nRows << ", nVerticalPoints: " << nCols << std::endl;
+	
+
+	//GRID = new GRIDPOINT* [nRows];
+	//for (int i = 0; i < nRows; i++)
+	//	GRID[i] = new GRIDPOINT[nCols];
 
 
-	GRID = new GRIDPOINT* [nRows];
-	for (int i = 0; i < nRows; i++)
-		GRID[i] = new GRIDPOINT[nCols];
-
-
-	int row = 0, col = 0;
-	for (float y = -rows; y <= rows; y += quad_size)
-	{
-		col = 0;
-		for (float x = -cols; x <= cols; x += quad_size)
-		{
-			const float isoSurfaceValue = lowestISOvalue + static_cast <float> (rand()) /
-			(static_cast <float> (RAND_MAX / (highestISOvalue - (lowestISOvalue))));
-			GRIDPOINT gridPoint;
-			gridPoint.edgePosition = { x, y, 0.0f };
-			gridPoint.isoSurfaceValue = isoSurfaceValue;
-			GRID[row][col] = gridPoint;
-			col++;
-		}
-		row++;
-	}
+	//int row = 0, col = 0;
+	//for (float y = -rows; y <= rows; y += quad_size)
+	//{
+	//	col = 0;
+	//	for (float x = -cols; x <= cols; x += quad_size)
+	//	{
+	//		const float isoSurfaceValue = lowestISOvalue + static_cast <float> (rand()) /
+	//		(static_cast <float> (RAND_MAX / (highestISOvalue - (lowestISOvalue))));
+	//		GRIDPOINT gridPoint;
+	//		gridPoint.edgePosition = { x, y, 0.0f };
+	//		gridPoint.isoSurfaceValue = isoSurfaceValue;
+	//		GRID[row][col] = gridPoint;
+	//		col++;
+	//	}
+	//	row++;
+	//}
 
 	//GRID[0][0].isoSurfaceValue = lowestISOvalue;
 	//GRID[0][1].isoSurfaceValue = lowestISOvalue;
@@ -203,20 +207,20 @@ void SandboxLayer::GenerateContour()
 
 
 
-	//contour = new float* [nRows];
-	//for (int i = 0; i < nRows; i++)
-	//	contour[i] = new float[nCols];
+	contour = new float* [nRows];
+	for (int i = 0; i < nRows; i++)
+		contour[i] = new float[nCols];
 
-	//for (int row = 0; row < nRows; row++)
-	//{
-	//	for (int col = 0; col < nCols; col++)
-	//	{
-	//		contour[row][col] = rand() % 2;
+	for (int row = 0; row < nRows; row++)
+	{
+		for (int col = 0; col < nCols; col++)
+		{
+			contour[row][col] = 1.0f/*rand() % 2*/;
 
-	//		std::cout << GRID[row][col].isoSurfaceValue << ", ";
-	//	}
-	//	std::cout << std::endl;
-	//}
+			//std::cout << GRID[row][col].isoSurfaceValue << ", ";
+		}
+		//std::cout << std::endl;
+	}
 
 
 	//for (int row = 0; row < nRows - 1; row++)
@@ -240,103 +244,103 @@ void SandboxLayer::GenerateContour()
 
 void SandboxLayer::RenderContour()
 {
-	//int row = 0, col = 0;
-	//for (float y = -rows; y <= rows; y += quad_size)
-	//{
-	//	col = 0;
-	//	for (float x = -cols; x <= cols; x += quad_size)
-	//	{
-	//		GeneratePoints(x, y, contour[row][col]);
-	//		col++;
-	//	}
-	//	row++;
-	//}
-
-
-	for (int row = 0; row < nRows - 1; row++)
+	int row = 0, col = 0;
+	for (float y = -rows; y <= rows; y += quad_size)
 	{
-		for (int col = 0; col < nCols - 1; col++)
+		col = 0;
+		for (float x = -cols; x <= cols; x += quad_size)
 		{
-			int facetIndex = 0;
-			GRIDPOINT p1 = GRID[row][col];
-			GRIDPOINT p2 = GRID[row][col + 1];
-			GRIDPOINT p4 = GRID[row + 1][col + 1];
-			GRIDPOINT p8 = GRID[row + 1][col];
-
-			if (p1.isoSurfaceValue < isoLevel) facetIndex |= 1;
-			if (p2.isoSurfaceValue < isoLevel) facetIndex |= 2;
-			if (p4.isoSurfaceValue < isoLevel) facetIndex |= 4;
-			if (p8.isoSurfaceValue < isoLevel) facetIndex |= 8;
-
-			//std::cout << "facetIndex: " << facetIndex << ", ";
-
-			GeneratePoints(GRID[row][col].edgePosition, (float)facetIndex / 15.0f);
-
-			/*
-				D	N   C
-				E		W
-				A	S   B
-			*/
-
-			/*const glm::vec3 A = { x,			 y, 0.0f };
-			const glm::vec3 B = { x + quad_size,			 y, 0.0f };
-			const glm::vec3 C = { x + quad_size, y + quad_size, 0.0f };
-			const glm::vec3 D = { x, y + quad_size, 0.0f };
-
-			const glm::vec3 N = { x + surface_point, y + quad_size, 0.0f };
-			const glm::vec3 E = { x, y + surface_point, 0.0f };
-			const glm::vec3 W = { x + quad_size, y + surface_point, 0.0f };
-			const glm::vec3 S = { x + surface_point,			 y, 0.0f };*/
-
-			const glm::vec3 A = p1.edgePosition;
-			const glm::vec3 B = p2.edgePosition;
-			const glm::vec3 C = p4.edgePosition;
-			const glm::vec3 D = p8.edgePosition;
-
-			float surface_point = quad_size / 2.0f;
-			const glm::vec3 N = { A[0] + surface_point,					D[1], 0.0f };
-			const glm::vec3 E = {				  A[0], A[1] + surface_point, 0.0f };
-			const glm::vec3 W = {				  B[0], B[1] + surface_point, 0.0f };
-			const glm::vec3 S = { A[0] + surface_point,					A[1], 0.0f };
-
-			//GenerateTriangles(1, 1, Isosurface::FacetByIndex(facetIndex));
-			GenerateTriangles(A, B, C, D, N, E, W, S, Isosurface::FacetByIndex(facetIndex));
+			 
+			GeneratePoints(glm::vec3{ x, y, 0.0f}, contour[row][col]);
+			col++;
 		}
-		std::cout << std::endl;
+		row++;
 	}
 
-
-	//float x = -rows, y = -cols;
+	
 	//for (int row = 0; row < nRows - 1; row++)
 	//{
-	//	x = -cols;
 	//	for (int col = 0; col < nCols - 1; col++)
 	//	{
+	//		int facetIndex = 0;
+	//		GRIDPOINT p1 = GRID[row][col];
+	//		GRIDPOINT p2 = GRID[row][col + 1];
+	//		GRIDPOINT p4 = GRID[row + 1][col + 1];
+	//		GRIDPOINT p8 = GRID[row + 1][col];
 
-	//		int isoLine = GetState(contour[row + 1][col], contour[row + 1][col + 1],
-	//						contour[row][col + 1], contour[row][col]);
-	//		std::cout <<
-	//			contour[row + 1][col] << ", " <<
-	//			contour[row + 1][col + 1] << ", " <<
-	//			contour[row][col + 1] << ", " <<
-	//			contour[row][col] << ", " <<
-	//			isoLine << 
-	//			std::endl;
+	//		if (p1.isoSurfaceValue < isoLevel) facetIndex |= 1;
+	//		if (p2.isoSurfaceValue < isoLevel) facetIndex |= 2;
+	//		if (p4.isoSurfaceValue < isoLevel) facetIndex |= 4;
+	//		if (p8.isoSurfaceValue < isoLevel) facetIndex |= 8;
 
-	//		//GenerateLines(x, y, Isolines::LineByIndex(isoLine));
-	//		//GenerateTriangles(x, y, Isolines::LineByIndex(isoLine));
-	//		x += quad_size;
+	//		//std::cout << "facetIndex: " << facetIndex << ", ";
+
+	//		//GeneratePoints(GRID[row][col].edgePosition, (float)facetIndex / 15.0f);
+
+	//		/*
+	//			D	N   C
+	//			E		W
+	//			A	S   B
+	//		*/
+
+	//		/*const glm::vec3 A = { x,			 y, 0.0f };
+	//		const glm::vec3 B = { x + quad_size,			 y, 0.0f };
+	//		const glm::vec3 C = { x + quad_size, y + quad_size, 0.0f };
+	//		const glm::vec3 D = { x, y + quad_size, 0.0f };
+
+	//		const glm::vec3 N = { x + surface_point, y + quad_size, 0.0f };
+	//		const glm::vec3 E = { x, y + surface_point, 0.0f };
+	//		const glm::vec3 W = { x + quad_size, y + surface_point, 0.0f };
+	//		const glm::vec3 S = { x + surface_point,			 y, 0.0f };*/
+
+	//		const glm::vec3 A = p1.edgePosition;
+	//		const glm::vec3 B = p2.edgePosition;
+	//		const glm::vec3 C = p4.edgePosition;
+	//		const glm::vec3 D = p8.edgePosition;
+
+	//		float surface_point = quad_size / 2.0f;
+	//		const glm::vec3 N = { A[0] + surface_point,					D[1], 0.0f };
+	//		const glm::vec3 E = {				  A[0], A[1] + surface_point, 0.0f };
+	//		const glm::vec3 W = {				  B[0], B[1] + surface_point, 0.0f };
+	//		const glm::vec3 S = { A[0] + surface_point,					A[1], 0.0f };
+
+	//		//GenerateTriangles(1, 1, Isosurface::FacetByIndex(facetIndex));
+	//		//GenerateTriangles(A, B, C, D, N, E, W, S, Isosurface::FacetByIndex(facetIndex));
 	//	}
-	//	y += quad_size;
+	//	//std::cout << std::endl;
 	//}
+
+
+	float x = -rows, y = -cols;
+	for (int row = 0; row < nRows - 1; row++)
+	{
+		x = -cols;
+		for (int col = 0; col < nCols - 1; col++)
+		{
+
+			int isoFacet = GetState(contour[row + 1][col], contour[row + 1][col + 1],
+							contour[row][col + 1], contour[row][col]);
+			//std::cout <<
+			//	contour[row + 1][col] << ", " <<
+			//	contour[row + 1][col + 1] << ", " <<
+			//	contour[row][col + 1] << ", " <<
+			//	contour[row][col] << ", " <<
+			//	isoLine << 
+			//	std::endl;
+
+			//GenerateTriangles(x, y, Isosurface::FacetByIndex(isoFacet));
+			x += quad_size;
+		}
+		y += quad_size;
+	}
 	//std::cout << "-------------" << std::endl;
 
 }
 
-//int SandboxLayer::GetState(int a, int b, int c, int d)
-//{
-//	return a * 8 + b * 4 + c * 2 + d * 1;
-//}
+int SandboxLayer::GetState(int a, int b, int c, int d)
+{
+	return a * 8 + b * 4 + c * 2 + d * 1;
+}
 
 void SandboxLayer::GeneratePoints(glm::vec3 position, float decimalCode) const
 {
@@ -354,14 +358,17 @@ void SandboxLayer::GeneratePoints(glm::vec3 position, float decimalCode) const
 }
 
 
-void SandboxLayer::GenerateTriangles(const glm::vec3 A, const glm::vec3 B, const glm::vec3 C, 
-	const glm::vec3 D, const glm::vec3 N, const glm::vec3 E, const glm::vec3 W, const glm::vec3 S, 
-	Isosurface::Facet facet) const
-{
 
-	//float surface_point = quad_size / 2.0f;
-	//float row = rows - quad_size;
-	//float col = cols - quad_size;
+
+//void SandboxLayer::GenerateTriangles(const glm::vec3 A, const glm::vec3 B, const glm::vec3 C, 
+//	const glm::vec3 D, const glm::vec3 N, const glm::vec3 E, const glm::vec3 W, const glm::vec3 S, 
+//	Isosurface::Facet facet) const
+
+void SandboxLayer::GenerateTriangles(float x, float y, Isosurface::Facet facet) const
+{
+	float surface_point = quad_size / 2.0f;
+	float row = rows - quad_size;
+	float col = cols - quad_size;
 	
 	/*
 		D	N   C
@@ -369,15 +376,15 @@ void SandboxLayer::GenerateTriangles(const glm::vec3 A, const glm::vec3 B, const
 		A	S   B
 	*/
 
-	//const glm::vec3 A = {			  x,			 y, 0.0f };
-	//const glm::vec3 B = { x + quad_size,			 y, 0.0f };
-	//const glm::vec3 C = { x + quad_size, y + quad_size, 0.0f };
-	//const glm::vec3 D = {			  x, y + quad_size, 0.0f };
+	const glm::vec3 A = {			  x,			 y, 0.0f };
+	const glm::vec3 B = { x + quad_size,			 y, 0.0f };
+	const glm::vec3 C = { x + quad_size, y + quad_size, 0.0f };
+	const glm::vec3 D = {			  x, y + quad_size, 0.0f };
 
-	//const glm::vec3 N = { x + surface_point, y + quad_size, 0.0f };
-	//const glm::vec3 E = {			  x, y + surface_point, 0.0f };
-	//const glm::vec3 W = { x + quad_size, y + surface_point, 0.0f };
-	//const glm::vec3 S = { x + surface_point,			 y, 0.0f };
+	const glm::vec3 N = { x + surface_point, y + quad_size, 0.0f };
+	const glm::vec3 E = {			  x, y + surface_point, 0.0f };
+	const glm::vec3 W = { x + quad_size, y + surface_point, 0.0f };
+	const glm::vec3 S = { x + surface_point,			 y, 0.0f };
 
 	glm::vec4 color = { 1.0f, 0.0f, 0.0f, 1.0f };
 
@@ -506,3 +513,153 @@ void SandboxLayer::GenerateTriangles(const glm::vec3 A, const glm::vec3 B, const
 
 	s_Instance->Draw(facet, positions, color, texIndicesPoints);
 }
+
+//void GenerateTriangles(float x, float y, Isosurface::Facet facet) const
+//{
+//	float surface_point = quad_size / 2.0f;
+//	float row = rows - quad_size;
+//	float col = cols - quad_size;
+//	
+//	/*
+//		D	N   C
+//		E		W
+//		A	S   B
+//	*/
+//
+//	const glm::vec3 A = {			  x,			 y, 0.0f };
+//	const glm::vec3 B = { x + quad_size,			 y, 0.0f };
+//	const glm::vec3 C = { x + quad_size, y + quad_size, 0.0f };
+//	const glm::vec3 D = {			  x, y + quad_size, 0.0f };
+//
+//	const glm::vec3 N = { x + surface_point, y + quad_size, 0.0f };
+//	const glm::vec3 E = {			  x, y + surface_point, 0.0f };
+//	const glm::vec3 W = { x + quad_size, y + surface_point, 0.0f };
+//	const glm::vec3 S = { x + surface_point,			 y, 0.0f };
+//
+//	glm::vec4 color = { 1.0f, 0.0f, 0.0f, 1.0f };
+//
+//	std::vector<glm::vec3> positions;
+//	const ContourFacet contourFacetProperites = MarchingSquare::ContourFacetProperties(facet);
+//	std::vector<glm::vec2> texIndicesPoints = contourFacetProperites.texIndicesPoints;
+//
+//	switch (facet)
+//	{
+//	case Isosurface::Facet::Zero:
+//		return;
+//		break;
+//
+//	case Isosurface::Facet::One:
+//		positions.emplace_back(A);
+//		positions.emplace_back(S);
+//		positions.emplace_back(E);
+//		break;
+//
+//	case Isosurface::Facet::Two:
+//		positions.emplace_back(B);
+//		positions.emplace_back(W);
+//		positions.emplace_back(S);
+//		break;
+//
+//	case Isosurface::Facet::Three:
+//		positions.emplace_back(A);
+//		positions.emplace_back(B);
+//		positions.emplace_back(W);
+//		positions.emplace_back(E);
+//		break;
+//
+//	case Isosurface::Facet::Four:
+//		positions.emplace_back(C);
+//		positions.emplace_back(N);
+//		positions.emplace_back(W);
+//		break;
+//
+//	case Isosurface::Facet::Five:
+//		positions.emplace_back(A);
+//		positions.emplace_back(S);
+//		positions.emplace_back(W);
+//		positions.emplace_back(C);
+//		positions.emplace_back(N);
+//		positions.emplace_back(E);
+//		break;
+//
+//	case Isosurface::Facet::Six:
+//		positions.emplace_back(B);
+//		positions.emplace_back(C);
+//		positions.emplace_back(N);
+//		positions.emplace_back(S);
+//		break;
+//
+//	case Isosurface::Facet::Seven:
+//		positions.emplace_back(A);
+//		positions.emplace_back(B);
+//		positions.emplace_back(C);
+//		positions.emplace_back(N);
+//		positions.emplace_back(E);
+//		break;
+//
+//	case Isosurface::Facet::Eight:
+//		positions.emplace_back(D);
+//		positions.emplace_back(E);
+//		positions.emplace_back(N);
+//		break;
+//
+//	case Isosurface::Facet::Nine:
+//		positions.emplace_back(D);
+//		positions.emplace_back(A);
+//		positions.emplace_back(S);
+//		positions.emplace_back(N);
+//		break;
+//
+//	case Isosurface::Facet::Ten:
+//		positions.emplace_back(B);
+//		positions.emplace_back(W);
+//		positions.emplace_back(N);
+//		positions.emplace_back(D);
+//		positions.emplace_back(E);
+//		positions.emplace_back(S);
+//		break;
+//
+//	case Isosurface::Facet::Eleven:
+//		positions.emplace_back(D);
+//		positions.emplace_back(A);
+//		positions.emplace_back(B);
+//		positions.emplace_back(W);
+//		positions.emplace_back(N);
+//		break;
+//
+//	case Isosurface::Facet::Tweleve:
+//		positions.emplace_back(C);
+//		positions.emplace_back(D);
+//		positions.emplace_back(E);
+//		positions.emplace_back(W);
+//		break;
+//
+//	case Isosurface::Facet::Thirteen:
+//		positions.emplace_back(C);
+//		positions.emplace_back(D);
+//		positions.emplace_back(A);
+//		positions.emplace_back(S);
+//		positions.emplace_back(W);
+//		break;
+//
+//	case Isosurface::Facet::Fourteen:
+//		positions.emplace_back(B);
+//		positions.emplace_back(C);
+//		positions.emplace_back(D);
+//		positions.emplace_back(E);
+//		positions.emplace_back(S);
+//		break;
+//
+//	case Isosurface::Facet::Fifteen:
+//		positions.emplace_back(A);
+//		positions.emplace_back(B);
+//		positions.emplace_back(C);
+//		positions.emplace_back(D);
+//		break;
+//
+//	default:
+//		break;
+//	};
+//
+//	s_Instance->Draw(facet, positions, color, texIndicesPoints);
+//}

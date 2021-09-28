@@ -6,6 +6,7 @@
 #include<glm/glm.hpp>
 
 #include "Renderer.h"
+#include "grid/Grid.h"
 
 class SandboxLayer : public GLCore::Layer
 {
@@ -21,19 +22,18 @@ public:
 private:
 	void GenerateContour();
 	void RenderContour();
-	//int GetState(int a, int b, int c, int d);
+	int GetState(int a, int b, int c, int d);
 	void GeneratePoints(glm::vec3 position, float decimalCode) const;
-
-	void GenerateTriangles(const glm::vec3 A, const glm::vec3 B, const glm::vec3 C, const glm::vec3 D,
-		const glm::vec3 N, const glm::vec3 E, const glm::vec3 W, const glm::vec3 S,
-		Isosurface::Facet facet) const;
-	//void GenerateTriangles(float x, float y, Isosurface::Facet line) const;
+	void GenerateTriangles(float x, float y, Isosurface::Facet facet) const;
 
 private:
+	Grid* grid = nullptr;
+
 	const float highestISOvalue = 10.0f/*16.0f*/;
 	const float lowestISOvalue = 0.0f/*-34.0f*/;
 	const float isoLevel = /*0.0f*/ 5.0f;
-	const float quad_size = 10.0f;
+
+	const float quad_size = 0.25f;
 	const float rows = 10.0f;
 	const float cols = 10.0f;
 	int nRows = 2 * rows / quad_size + 1;
@@ -44,7 +44,7 @@ private:
 
 	glm::vec4 m_SquareColor = { 0.8f, 0.2f, 0.3f, 1.0f };
 	Renderer* s_Instance = nullptr;
-	//float** contour;
-	GRIDPOINT** GRID;
+	float** contour;
+	//GRIDPOINT** GRID;
 	
 };
