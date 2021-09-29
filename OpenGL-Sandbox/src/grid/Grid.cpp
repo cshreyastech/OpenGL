@@ -104,7 +104,7 @@ void Grid::GenerateIsoValues(const float lowestISOvalue, const float highestISOv
 	Node* colRunner = head_;
 	Node* temp = nullptr;
 
-	srand((unsigned)time(NULL));
+	//srand((unsigned)time(NULL));
 	while (colRunner != nullptr)
 	{
 		rowRunner = colRunner;
@@ -145,11 +145,11 @@ void Grid::GenerateIsoValues(const float lowestISOvalue, const float highestISOv
 				rowRunner->isoSurfaceVal[2] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
 				rowRunner->isoSurfaceVal[3] = rowRunner->left->isoSurfaceVal[2];
 			}
-			std::cout << rowRunner->cellID << ", ";
+			//std::cout << rowRunner->cellID << ", ";
 			temp = rowRunner;
 			rowRunner = rowRunner->right;
 		}
-		std::cout << std::endl;
+		//std::cout << std::endl;
 
 		colRunner = colRunner->above;
 	}
@@ -165,9 +165,6 @@ void Grid::PrintFromHead()
 	Node* temp = head_;
 	Node* rowRunner = head_;
 	Node* colRunner = head_;
-
-	rowRunner = head_;
-	colRunner = head_;
 
 	std::cout << std::endl << "Iteration from Head" << std::endl;
 
@@ -185,11 +182,6 @@ void Grid::PrintFromHead()
 
 		colRunner = colRunner->above;
 	}
-
-	Node* node5 = head_->right->above;
-	Node* node8 = head_->above->above;
-	Node* node9 = head_->right->right->above->above->left;
-	Node* node10 = head_->above->above->above->right->right->below;
 }
 
 

@@ -11,6 +11,11 @@
 */
 // A -> B -> C -> D
 
+/* This cannot be a public class as any external class can
+* runin the grid. Continuing with this implementation for 
+* now for simplicity. Needs restructuring
+*/
+
 class Node
 {
 public:

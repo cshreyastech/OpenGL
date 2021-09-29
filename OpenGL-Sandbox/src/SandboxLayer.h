@@ -24,7 +24,7 @@ private:
 	void RenderContour();
 	int GetState(int a, int b, int c, int d);
 	void GeneratePoints(glm::vec3 position, float decimalCode) const;
-	void GenerateTriangles(float x, float y, Isosurface::Facet facet) const;
+	void DrawFacet(glm::vec3 edges[4], glm::vec3 contorPoints[4], int facetIndex) const;
 private:
 	Grid* grid = nullptr;
 
@@ -32,7 +32,7 @@ private:
 	const float lowestISOvalue = 0.0f/*-34.0f*/;
 	const float isoLevel = /*0.0f*/ 5.0f;
 
-	const float quad_size = 5.0f;
+	const float quad_size = 0.25f;
 	const float rows = 10.0f;
 	const float cols = 10.0f;
 	int nRows = 2 * rows / quad_size + 1;
@@ -42,8 +42,5 @@ private:
 	GLCore::Utils::OrthographicCameraController m_CameraController;
 
 	glm::vec4 m_SquareColor = { 0.8f, 0.2f, 0.3f, 1.0f };
-	Renderer* s_Instance = nullptr;
-	float** contour;
-	//GRIDPOINT** GRID;
-	
+	Renderer* s_Instance = nullptr;	
 };
