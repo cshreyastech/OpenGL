@@ -11,12 +11,11 @@
 */
 // A -> B -> C -> D
 
-
 class Node
 {
 public:
     glm::vec3 edgePositions[4];	//position of each corner of the grid in world space
-    //float isoSurfaceVal[4];	//value of the function at this grid corner
+    float isoSurfaceVal[4];	//value of the function at this grid corner
     int cellID;
     Node* left = nullptr;
     Node* right = nullptr;

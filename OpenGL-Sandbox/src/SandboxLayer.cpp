@@ -50,15 +50,15 @@ void SandboxLayer::OnAttach()
 	GenerateContour();
 
 	grid = Grid::Instance(quad_size, lowestISOvalue, highestISOvalue);
-	//grid->Print();
-	grid->CleanUp();
+	grid->GenerateIsoValues(lowestISOvalue, highestISOvalue);
+	grid->PrintFromHead();
+	//grid->CleanUp();
 }
 
 void SandboxLayer::OnDetach()
 {
 	s_Instance->Shutdown();
 	delete[] contour;
-	//delete[] GRID;
 	grid->CleanUp();
 	delete grid;
 }
@@ -200,8 +200,6 @@ void SandboxLayer::GenerateContour()
 	//		std::cout << row << ", " << col << ", " << isoSurfaceValue << std::endl;
 	//	}
 	//}
-
-
 
 
 
@@ -514,6 +512,8 @@ void SandboxLayer::GenerateTriangles(float x, float y, Isosurface::Facet facet) 
 	s_Instance->Draw(facet, positions, color, texIndicesPoints);
 }
 
+
+
 //void GenerateTriangles(float x, float y, Isosurface::Facet facet) const
 //{
 //	float surface_point = quad_size / 2.0f;
@@ -663,3 +663,4 @@ void SandboxLayer::GenerateTriangles(float x, float y, Isosurface::Facet facet) 
 //
 //	s_Instance->Draw(facet, positions, color, texIndicesPoints);
 //}
+

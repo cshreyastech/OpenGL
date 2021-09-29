@@ -25,7 +25,6 @@ private:
 	int GetState(int a, int b, int c, int d);
 	void GeneratePoints(glm::vec3 position, float decimalCode) const;
 	void GenerateTriangles(float x, float y, Isosurface::Facet facet) const;
-
 private:
 	Grid* grid = nullptr;
 
@@ -33,7 +32,7 @@ private:
 	const float lowestISOvalue = 0.0f/*-34.0f*/;
 	const float isoLevel = /*0.0f*/ 5.0f;
 
-	const float quad_size = 0.25f;
+	const float quad_size = 5.0f;
 	const float rows = 10.0f;
 	const float cols = 10.0f;
 	int nRows = 2 * rows / quad_size + 1;

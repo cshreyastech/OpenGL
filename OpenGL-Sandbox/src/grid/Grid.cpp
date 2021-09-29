@@ -18,7 +18,6 @@ Grid::Grid(const float quad_size, const float lowestISOvalue, const float highes
 
 void Grid::ConstructGrid()
 {
-
 	Node* aboveNode = nullptr;
 	Node* belowNode = nullptr;
 	Node* leftNode = nullptr;
@@ -54,7 +53,8 @@ void Grid::ConstructGrid()
 				rowHead = head_;
 				leftNode = rowHead;
 			}
-			// Bottom row
+			
+			// Bottom most Row right of head
 			else if (y == -rows)
 			{
 				newNode->left = leftNode;
@@ -62,7 +62,8 @@ void Grid::ConstructGrid()
 				
 				leftNode = leftNode->right;
 			}
-			// Left Column
+
+			// Left most Column top of head
 			else if (x == -cols)
 			{
 				belowNode = rowHead;
@@ -73,6 +74,7 @@ void Grid::ConstructGrid()
 				belowNode->above = rowHead;
 				belowNode = belowNode->right;
 			}
+			
 			// All other Nodes
 			else
 			{
@@ -96,7 +98,64 @@ void Grid::ConstructGrid()
 	std::cout << std::endl;
 }
 
-void Grid::Print()
+void Grid::GenerateIsoValues(const float lowestISOvalue, const float highestISOvalue)
+{
+	Node* rowRunner = head_;
+	Node* colRunner = head_;
+	Node* temp = nullptr;
+
+	srand((unsigned)time(NULL));
+	while (colRunner != nullptr)
+	{
+		rowRunner = colRunner;
+
+		while (rowRunner != nullptr)
+		{
+			// head
+			if (rowRunner == head_)
+			{
+				rowRunner->isoSurfaceVal[0] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+				rowRunner->isoSurfaceVal[1] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+				rowRunner->isoSurfaceVal[2] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+				rowRunner->isoSurfaceVal[3] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+			}
+			// Bottom most Row right of head
+			else if (rowRunner->below == nullptr && rowRunner->above != nullptr &&
+				rowRunner->left != nullptr)
+			{
+				rowRunner->isoSurfaceVal[0] = rowRunner->left->isoSurfaceVal[1];
+				rowRunner->isoSurfaceVal[1] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+				rowRunner->isoSurfaceVal[2] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+				rowRunner->isoSurfaceVal[3] = rowRunner->left->isoSurfaceVal[2];
+			}
+			// Left most Column top of head
+			else if (rowRunner->below != nullptr && rowRunner->right != nullptr &&
+				rowRunner->left == nullptr)
+			{
+				rowRunner->isoSurfaceVal[0] = rowRunner->below->isoSurfaceVal[3];
+				rowRunner->isoSurfaceVal[1] = rowRunner->below->isoSurfaceVal[2];
+				rowRunner->isoSurfaceVal[2] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+				rowRunner->isoSurfaceVal[3] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+			}
+			//All other nodes
+			else
+			{
+				rowRunner->isoSurfaceVal[0] = rowRunner->left->isoSurfaceVal[1];
+				rowRunner->isoSurfaceVal[1] = rowRunner->below->isoSurfaceVal[2];
+				rowRunner->isoSurfaceVal[2] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+				rowRunner->isoSurfaceVal[3] = rowRunner->left->isoSurfaceVal[2];
+			}
+			std::cout << rowRunner->cellID << ", ";
+			temp = rowRunner;
+			rowRunner = rowRunner->right;
+		}
+		std::cout << std::endl;
+
+		colRunner = colRunner->above;
+	}
+}
+
+void Grid::PrintFromHead()
 {
 	std::cout
 		<< "nCells" << nCells << ", "
@@ -109,32 +168,43 @@ void Grid::Print()
 
 	rowRunner = head_;
 	colRunner = head_;
-	int row = nRows;
-	int col = nCols;
 
 	std::cout << std::endl << "Iteration from Head" << std::endl;
 
 	while (colRunner != nullptr)
 	{
 		rowRunner = colRunner;
-
 		while (rowRunner != nullptr)
 		{
 			std::cout << rowRunner->cellID << ", ";
+
 			temp = rowRunner;
 			rowRunner = rowRunner->right;
-
-			col++;
 		}
 		std::cout << std::endl;
 
 		colRunner = colRunner->above;
 	}
 
-	std::cout << std::endl << "Iteration from Tail" << std::endl;
+	Node* node5 = head_->right->above;
+	Node* node8 = head_->above->above;
+	Node* node9 = head_->right->right->above->above->left;
+	Node* node10 = head_->above->above->above->right->right->below;
+}
 
-	rowRunner = tail_;
-	colRunner = tail_;
+
+void Grid::PrintFromTail()
+{
+	std::cout
+		<< "nCells" << nCells << ", "
+		<< "nRows" << nRows << ", "
+		<< "nCols" << nCols << std::endl;
+
+	std::cout << std::endl << "Iteration from Tail" << std::endl;
+	Node* temp = tail_;
+	Node* rowRunner = tail_;
+	Node* colRunner = tail_;
+
 	while (colRunner != nullptr)
 	{
 		rowRunner = colRunner;
@@ -144,14 +214,13 @@ void Grid::Print()
 			std::cout << rowRunner->cellID << ", ";
 			temp = rowRunner;
 			rowRunner = rowRunner->left;
-
-			col++;
 		}
 		std::cout << std::endl;
 
 		colRunner = colRunner->below;
 	}
 }
+
 
 void Grid::CleanUp()
 {
@@ -176,4 +245,12 @@ void Grid::CleanUp()
 		}
 		//std::cout << std::endl;
 	}
+}
+
+float Grid::GetRandomIsoValueInRange(const float low, const float high)
+{
+	//srand((unsigned)time(NULL));
+
+	return (low + static_cast <float> (rand()) /
+		(static_cast <float> (RAND_MAX / (high - (low)))));
 }
