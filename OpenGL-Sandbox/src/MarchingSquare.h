@@ -47,13 +47,12 @@ public:
 		return contourFacetMap_.at(facet);
 	}
 
+	static float InterpolateIntersectionPoint(float isoLevel, float p1, float p2, float surfaceVal1, float surfaceVal2);
+	static std::vector<glm::vec3> FacetCoordinates(glm::vec3 edges[4], glm::vec3 surfaceValues[4], Isosurface::Facet facetID);
 private:
 	MarchingSquare();
 
 private:
-
-
-
 	static const inline std::unordered_map<Isosurface::Facet, ContourFacet> contourFacetMap_ =
 	{
 		{

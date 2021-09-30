@@ -22,10 +22,10 @@ public:
 private:
 	void GenerateContour();
 	void RenderContour();
-	int GetState(int a, int b, int c, int d);
+	
 	void GeneratePoints(glm::vec3 position, float decimalCode) const;
 	void DrawFacet(glm::vec3 edges[4], glm::vec3 contorPoints[4], int facetIndex) const;
-	float InterpolateIntersectionPoint(float p1, float p2, float surfaceVal1, float surfaceVal2);
+	
 private:
 	Grid* grid = nullptr;
 
@@ -33,7 +33,7 @@ private:
 	const float lowestISOvalue = /*0.0f*/-34.0f;
 	const float isoLevel = /*0.0f*/ -10.0f;
 
-	const float quad_size = 0.1f;
+	const float quad_size = 0.25f;
 	const float rows = 10.0f;
 	const float cols = 10.0f;
 	int nRows = 2 * rows / quad_size + 1;

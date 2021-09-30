@@ -269,19 +269,22 @@ void SandboxLayer::RenderContour()
 					facetIndex |= 1 << i;
 			}
 
-			float surface_point = quad_size / 2.0f;
+			//float surface_point = quad_size / 2.0f;
 
-			float xN = InterpolateIntersectionPoint(rowRunner->edgePositions[3][0], 
-				rowRunner->edgePositions[2][0], rowRunner->surfaceVal[3], rowRunner->surfaceVal[2]);
-			float yE = InterpolateIntersectionPoint(rowRunner->edgePositions[0][1],
-				rowRunner->edgePositions[3][1], rowRunner->surfaceVal[0], rowRunner->surfaceVal[3]);
-			float yW = InterpolateIntersectionPoint(rowRunner->edgePositions[1][1],
-				rowRunner->edgePositions[2][1], rowRunner->surfaceVal[1], rowRunner->surfaceVal[2]);
-			float xS = InterpolateIntersectionPoint(rowRunner->edgePositions[0][0],
-				rowRunner->edgePositions[1][0], rowRunner->surfaceVal[0], rowRunner->surfaceVal[1]);
-			/*float surface_pointBC = InterpolateIntersectionPoint;
-			float surface_pointDC = InterpolateIntersectionPoint;
-			float surface_pointAD = InterpolateIntersectionPoint;*/
+			float xN = MarchingSquare::InterpolateIntersectionPoint(isoLevel,
+				rowRunner->edgePositions[3][0], rowRunner->edgePositions[2][0],
+				rowRunner->surfaceVal[3], rowRunner->surfaceVal[2]);
+
+			float yE = MarchingSquare::InterpolateIntersectionPoint(isoLevel, 
+				rowRunner->edgePositions[0][1], rowRunner->edgePositions[3][1], 
+				rowRunner->surfaceVal[0], rowRunner->surfaceVal[3]);
+			float yW = MarchingSquare::InterpolateIntersectionPoint(isoLevel, 
+				rowRunner->edgePositions[1][1], rowRunner->edgePositions[2][1], 
+				rowRunner->surfaceVal[1], rowRunner->surfaceVal[2]);
+			float xS = MarchingSquare::InterpolateIntersectionPoint(isoLevel, 
+				rowRunner->edgePositions[0][0], rowRunner->edgePositions[1][0], 
+				rowRunner->surfaceVal[0], rowRunner->surfaceVal[1]);
+			
 			//	/*
 			//		D	N   C
 			//		E		W
@@ -293,13 +296,6 @@ void SandboxLayer::RenderContour()
 			float yA = rowRunner->edgePositions[0][1];
 			float xB = rowRunner->edgePositions[1][0];
 			float yC = rowRunner->edgePositions[2][1];
-			//glm::vec3 surfaceValues[4] =
-			//{
-			//	{ xA + surface_point,				  yC, 0.0f },
-			//	{				  xA, yA + surface_point, 0.0f },
-			//	{				  xB, yA + surface_point, 0.0f },
-			//	{ xA + surface_point,				  yA, 0.0f }
-			//};
 
 			glm::vec3 surfaceValues[4] =
 			{
@@ -316,11 +312,6 @@ void SandboxLayer::RenderContour()
 		}
 		colRunner = colRunner->above;
 	}
-}
-
-int SandboxLayer::GetState(int a, int b, int c, int d)
-{
-	return a * 8 + b * 4 + c * 2 + d * 1;
 }
 
 void SandboxLayer::GeneratePoints(glm::vec3 position, float decimalCode) const
@@ -340,160 +331,14 @@ void SandboxLayer::GeneratePoints(glm::vec3 position, float decimalCode) const
 
 void SandboxLayer::DrawFacet(glm::vec3 edges[4], glm::vec3 surfaceValues[4], int facetIndex) const
 {
-	float surface_point = quad_size / 2.0f;
-	float row = rows - quad_size;
-	float col = cols - quad_size;
-
-	/*
-		D	N   C
-		E		W
-		A	S   B
-	*/
-
-	const glm::vec3 A = edges[0];
-	const glm::vec3 B = edges[1];
-	const glm::vec3 C = edges[2];
-	const glm::vec3 D = edges[3];
-
-	const glm::vec3 N = surfaceValues[0];
-	const glm::vec3 E = surfaceValues[1];
-	const glm::vec3 W = surfaceValues[2];
-	const glm::vec3 S = surfaceValues[3];
-
+	if (facetIndex == 0) return;
+	
 	glm::vec4 color = { 1.0f, 0.0f, 0.0f, 1.0f };
-
-	std::vector<glm::vec3> positions;
 	Isosurface::Facet facetID = Isosurface::FacetByIndex(facetIndex);
 	const ContourFacet contourFacetProperites = MarchingSquare::ContourFacetProperties(facetID);
 	std::vector<glm::vec2> texIndicesPoints = contourFacetProperites.texIndicesPoints;
+	std::vector<glm::vec3> positions = MarchingSquare::FacetCoordinates(edges, surfaceValues, facetID);
 
-	switch (facetID)
-	{
-	case Isosurface::Facet::Zero:
-		return;
-		break;
-
-	case Isosurface::Facet::One:
-		positions.emplace_back(A);
-		positions.emplace_back(S);
-		positions.emplace_back(E);
-		break;
-
-	case Isosurface::Facet::Two:
-		positions.emplace_back(B);
-		positions.emplace_back(W);
-		positions.emplace_back(S);
-		break;
-
-	case Isosurface::Facet::Three:
-		positions.emplace_back(A);
-		positions.emplace_back(B);
-		positions.emplace_back(W);
-		positions.emplace_back(E);
-		break;
-
-	case Isosurface::Facet::Four:
-		positions.emplace_back(C);
-		positions.emplace_back(N);
-		positions.emplace_back(W);
-		break;
-
-	case Isosurface::Facet::Five:
-		positions.emplace_back(A);
-		positions.emplace_back(S);
-		positions.emplace_back(W);
-		positions.emplace_back(C);
-		positions.emplace_back(N);
-		positions.emplace_back(E);
-		break;
-
-	case Isosurface::Facet::Six:
-		positions.emplace_back(B);
-		positions.emplace_back(C);
-		positions.emplace_back(N);
-		positions.emplace_back(S);
-		break;
-
-	case Isosurface::Facet::Seven:
-		positions.emplace_back(A);
-		positions.emplace_back(B);
-		positions.emplace_back(C);
-		positions.emplace_back(N);
-		positions.emplace_back(E);
-		break;
-
-	case Isosurface::Facet::Eight:
-		positions.emplace_back(D);
-		positions.emplace_back(E);
-		positions.emplace_back(N);
-		break;
-
-	case Isosurface::Facet::Nine:
-		positions.emplace_back(D);
-		positions.emplace_back(A);
-		positions.emplace_back(S);
-		positions.emplace_back(N);
-		break;
-
-	case Isosurface::Facet::Ten:
-		positions.emplace_back(B);
-		positions.emplace_back(W);
-		positions.emplace_back(N);
-		positions.emplace_back(D);
-		positions.emplace_back(E);
-		positions.emplace_back(S);
-		break;
-
-	case Isosurface::Facet::Eleven:
-		positions.emplace_back(D);
-		positions.emplace_back(A);
-		positions.emplace_back(B);
-		positions.emplace_back(W);
-		positions.emplace_back(N);
-		break;
-
-	case Isosurface::Facet::Tweleve:
-		positions.emplace_back(C);
-		positions.emplace_back(D);
-		positions.emplace_back(E);
-		positions.emplace_back(W);
-		break;
-
-	case Isosurface::Facet::Thirteen:
-		positions.emplace_back(C);
-		positions.emplace_back(D);
-		positions.emplace_back(A);
-		positions.emplace_back(S);
-		positions.emplace_back(W);
-		break;
-
-	case Isosurface::Facet::Fourteen:
-		positions.emplace_back(B);
-		positions.emplace_back(C);
-		positions.emplace_back(D);
-		positions.emplace_back(E);
-		positions.emplace_back(S);
-		break;
-
-	case Isosurface::Facet::Fifteen:
-		positions.emplace_back(A);
-		positions.emplace_back(B);
-		positions.emplace_back(C);
-		positions.emplace_back(D);
-		break;
-
-	default:
-		break;
-	};
 
 	s_Instance->Draw(facetID, positions, color, texIndicesPoints);
-}
-
-float SandboxLayer::InterpolateIntersectionPoint(float p1, float p2, float surfaceVal1, float surfaceVal2)
-{
-	float delta = surfaceVal2 - surfaceVal1;
-
-	if (delta == 0) return 0.5f;
-
-	return p1 + (isoLevel - surfaceVal1) * (p2 - p1) / delta;
 }
