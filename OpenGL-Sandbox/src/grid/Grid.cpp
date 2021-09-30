@@ -114,36 +114,36 @@ void Grid::GenerateIsoValues(const float lowestISOvalue, const float highestISOv
 			// head
 			if (rowRunner == head_)
 			{
-				rowRunner->isoSurfaceVal[0] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
-				rowRunner->isoSurfaceVal[1] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
-				rowRunner->isoSurfaceVal[2] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
-				rowRunner->isoSurfaceVal[3] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+				rowRunner->surfaceVal[0] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+				rowRunner->surfaceVal[1] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+				rowRunner->surfaceVal[2] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+				rowRunner->surfaceVal[3] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
 			}
 			// Bottom most Row right of head
 			else if (rowRunner->below == nullptr && rowRunner->above != nullptr &&
 				rowRunner->left != nullptr)
 			{
-				rowRunner->isoSurfaceVal[0] = rowRunner->left->isoSurfaceVal[1];
-				rowRunner->isoSurfaceVal[1] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
-				rowRunner->isoSurfaceVal[2] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
-				rowRunner->isoSurfaceVal[3] = rowRunner->left->isoSurfaceVal[2];
+				rowRunner->surfaceVal[0] = rowRunner->left->surfaceVal[1];
+				rowRunner->surfaceVal[1] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+				rowRunner->surfaceVal[2] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+				rowRunner->surfaceVal[3] = rowRunner->left->surfaceVal[2];
 			}
 			// Left most Column top of head
 			else if (rowRunner->below != nullptr && rowRunner->right != nullptr &&
 				rowRunner->left == nullptr)
 			{
-				rowRunner->isoSurfaceVal[0] = rowRunner->below->isoSurfaceVal[3];
-				rowRunner->isoSurfaceVal[1] = rowRunner->below->isoSurfaceVal[2];
-				rowRunner->isoSurfaceVal[2] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
-				rowRunner->isoSurfaceVal[3] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+				rowRunner->surfaceVal[0] = rowRunner->below->surfaceVal[3];
+				rowRunner->surfaceVal[1] = rowRunner->below->surfaceVal[2];
+				rowRunner->surfaceVal[2] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+				rowRunner->surfaceVal[3] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
 			}
 			//All other nodes
 			else
 			{
-				rowRunner->isoSurfaceVal[0] = rowRunner->left->isoSurfaceVal[1];
-				rowRunner->isoSurfaceVal[1] = rowRunner->below->isoSurfaceVal[2];
-				rowRunner->isoSurfaceVal[2] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
-				rowRunner->isoSurfaceVal[3] = rowRunner->left->isoSurfaceVal[2];
+				rowRunner->surfaceVal[0] = rowRunner->left->surfaceVal[1];
+				rowRunner->surfaceVal[1] = rowRunner->below->surfaceVal[2];
+				rowRunner->surfaceVal[2] = GetRandomIsoValueInRange(lowestISOvalue, highestISOvalue);
+				rowRunner->surfaceVal[3] = rowRunner->left->surfaceVal[2];
 			}
 			//std::cout << rowRunner->cellID << ", ";
 			temp = rowRunner;

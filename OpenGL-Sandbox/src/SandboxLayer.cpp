@@ -175,10 +175,10 @@ void SandboxLayer::GenerateContour()
 		{
 			int facetIndex = 0;
 
-			if (rowRunner->isoSurfaceVal[0] < isoLevel) facetIndex |= 1;
-			if (rowRunner->isoSurfaceVal[1] < isoLevel) facetIndex |= 2;
-			if (rowRunner->isoSurfaceVal[2] < isoLevel) facetIndex |= 4;
-			if (rowRunner->isoSurfaceVal[3] < isoLevel) facetIndex |= 8;
+			if (rowRunner->surfaceVal[0] < isoLevel) facetIndex |= 1;
+			if (rowRunner->surfaceVal[1] < isoLevel) facetIndex |= 2;
+			if (rowRunner->surfaceVal[2] < isoLevel) facetIndex |= 4;
+			if (rowRunner->surfaceVal[3] < isoLevel) facetIndex |= 8;
 			//std::cout << std::endl << rowRunner->cellID << ", " << facetIndex << std::endl;
 
 			temp = rowRunner;
@@ -211,7 +211,7 @@ void SandboxLayer::RenderContour()
 				for (int i = 0; i < 4; i++)
 				{
 					GeneratePoints(rowRunner->edgePositions[i], 
-						rowRunner->isoSurfaceVal[i] < isoLevel);
+						rowRunner->surfaceVal[i] < isoLevel);
 				}
 			}
 			// Bottom most Row right of head
@@ -221,7 +221,7 @@ void SandboxLayer::RenderContour()
 				for (int i = 1; i < 3; i++)
 				{
 					GeneratePoints(rowRunner->edgePositions[i],
-						rowRunner->isoSurfaceVal[i] < isoLevel);
+						rowRunner->surfaceVal[i] < isoLevel);
 				}
 
 			}
@@ -232,14 +232,14 @@ void SandboxLayer::RenderContour()
 				for (int i = 2; i < 4; i++)
 				{
 					GeneratePoints(rowRunner->edgePositions[i],
-						rowRunner->isoSurfaceVal[i] < isoLevel);
+						rowRunner->surfaceVal[i] < isoLevel);
 				}
 			}
 			//All other nodes
 			else
 			{
 				GeneratePoints(rowRunner->edgePositions[2],
-				rowRunner->isoSurfaceVal[2] < isoLevel);
+				rowRunner->surfaceVal[2] < isoLevel);
 			}
 			//std::cout << rowRunner->cellID << ", ";
 			temp = rowRunner;
@@ -262,14 +262,26 @@ void SandboxLayer::RenderContour()
 		while (rowRunner != nullptr)
 		{
 			int facetIndex = 0;
-
-			if (rowRunner->isoSurfaceVal[0] < isoLevel) facetIndex |= 1;
-			if (rowRunner->isoSurfaceVal[1] < isoLevel) facetIndex |= 2;
-			if (rowRunner->isoSurfaceVal[2] < isoLevel) facetIndex |= 4;
-			if (rowRunner->isoSurfaceVal[3] < isoLevel) facetIndex |= 8;
 			
+			for (int i = 0; i < 4; i++)
+			{
+				if (rowRunner->surfaceVal[i] < isoLevel)
+					facetIndex |= 1 << i;
+			}
 
 			float surface_point = quad_size / 2.0f;
+
+			float xN = InterpolateIntersectionPoint(rowRunner->edgePositions[3][0], 
+				rowRunner->edgePositions[2][0], rowRunner->surfaceVal[3], rowRunner->surfaceVal[2]);
+			float yE = InterpolateIntersectionPoint(rowRunner->edgePositions[0][1],
+				rowRunner->edgePositions[3][1], rowRunner->surfaceVal[0], rowRunner->surfaceVal[3]);
+			float yW = InterpolateIntersectionPoint(rowRunner->edgePositions[1][1],
+				rowRunner->edgePositions[2][1], rowRunner->surfaceVal[1], rowRunner->surfaceVal[2]);
+			float xS = InterpolateIntersectionPoint(rowRunner->edgePositions[0][0],
+				rowRunner->edgePositions[1][0], rowRunner->surfaceVal[0], rowRunner->surfaceVal[1]);
+			/*float surface_pointBC = InterpolateIntersectionPoint;
+			float surface_pointDC = InterpolateIntersectionPoint;
+			float surface_pointAD = InterpolateIntersectionPoint;*/
 			//	/*
 			//		D	N   C
 			//		E		W
@@ -279,19 +291,24 @@ void SandboxLayer::RenderContour()
 			// N -> E -> W -> S
 			float xA = rowRunner->edgePositions[0][0];
 			float yA = rowRunner->edgePositions[0][1];
-			
 			float xB = rowRunner->edgePositions[1][0];
-
 			float yC = rowRunner->edgePositions[2][1];
-			glm::vec3 contorPoints[4] =
-			{
-				{ xA + surface_point,				  yC, 0.0f },
-				{				  xA, yA + surface_point, 0.0f },
-				{				  xB, yA + surface_point, 0.0f },
-				{ xA + surface_point,				  yA, 0.0f }
-			};
+			//glm::vec3 surfaceValues[4] =
+			//{
+			//	{ xA + surface_point,				  yC, 0.0f },
+			//	{				  xA, yA + surface_point, 0.0f },
+			//	{				  xB, yA + surface_point, 0.0f },
+			//	{ xA + surface_point,				  yA, 0.0f }
+			//};
 
-			DrawFacet(rowRunner->edgePositions, contorPoints, facetIndex);
+			glm::vec3 surfaceValues[4] =
+			{
+				{ xN, yC, 0.0f },
+				{ xA, yE, 0.0f },
+				{ xB, yW, 0.0f },
+				{ xS, yA, 0.0f }
+			};
+			DrawFacet(rowRunner->edgePositions, surfaceValues, facetIndex);
 			
 			temp = rowRunner;
 			rowRunner = rowRunner->right;
@@ -321,7 +338,7 @@ void SandboxLayer::GeneratePoints(glm::vec3 position, float decimalCode) const
 	s_Instance->Draw(Isosurface::Facet::Point, positions, color, TexIndicesPoints);
 }
 
-void SandboxLayer::DrawFacet(glm::vec3 edges[4], glm::vec3 contorPoints[4], int facetIndex) const
+void SandboxLayer::DrawFacet(glm::vec3 edges[4], glm::vec3 surfaceValues[4], int facetIndex) const
 {
 	float surface_point = quad_size / 2.0f;
 	float row = rows - quad_size;
@@ -338,10 +355,10 @@ void SandboxLayer::DrawFacet(glm::vec3 edges[4], glm::vec3 contorPoints[4], int 
 	const glm::vec3 C = edges[2];
 	const glm::vec3 D = edges[3];
 
-	const glm::vec3 N = contorPoints[0];
-	const glm::vec3 E = contorPoints[1];
-	const glm::vec3 W = contorPoints[2];
-	const glm::vec3 S = contorPoints[3];
+	const glm::vec3 N = surfaceValues[0];
+	const glm::vec3 E = surfaceValues[1];
+	const glm::vec3 W = surfaceValues[2];
+	const glm::vec3 S = surfaceValues[3];
 
 	glm::vec4 color = { 1.0f, 0.0f, 0.0f, 1.0f };
 
@@ -470,4 +487,13 @@ void SandboxLayer::DrawFacet(glm::vec3 edges[4], glm::vec3 contorPoints[4], int 
 	};
 
 	s_Instance->Draw(facetID, positions, color, texIndicesPoints);
+}
+
+float SandboxLayer::InterpolateIntersectionPoint(float p1, float p2, float surfaceVal1, float surfaceVal2)
+{
+	float delta = surfaceVal2 - surfaceVal1;
+
+	if (delta == 0) return 0.5f;
+
+	return p1 + (isoLevel - surfaceVal1) * (p2 - p1) / delta;
 }
